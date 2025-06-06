@@ -4,7 +4,7 @@ import './Header.css';
 const Header = ({ 
   text = " I'm a Artificial Intelligence dev", 
   speed = 250, 
-  imageSrc = "./../assets/img/header-img.svg",
+  imageSrc = "./assets/img/header-img.svg",
   imageAlt = "image" 
 }) => {
   const [displayText, setDisplayText] = useState('');
