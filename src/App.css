@@ -1,0 +1,40 @@
+@font-face {
+	font-family: Centra;
+	src: url('./../assets/font/CentraNo2-Bold.ttf');
+	font-weight: 700;
+}
+@font-face {
+	font-family: Centra;
+	src: url('./../assets/font/CentraNo2-Medium.ttf');
+	font-weight: 500;
+}
+@font-face {
+	font-family: Centra;
+	src: url('./../assets/font/CentraNo2-Book.ttf');
+	font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 75px;
+}
+
+body {
+  font-weight: 400;
+  background-image: linear-gradient(rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 0.8)), url('./../public/assets/img/banner-bg.png') !important;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #fff !important;
+  font-family: 'Centra', sans-serif !important;
+  display: flex;
+  flex-direction: column;
+  column-gap: 50px;
+  width: 80%;
+  margin: 0 auto ; 
+}
