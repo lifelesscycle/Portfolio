@@ -4,19 +4,19 @@ import './Projects.css';
 const Projects = ({ images }) => {
   const defaultImages = [
     {
-      src: './../assets/img/project-img1.png',
+      src: './assets/img/project-img1.png',
       caption: 'Voice based chatbot'
     },
     {
-      src: './../assets/img/project-img2.png',
+      src: './assets/img/project-img2.png',
       caption: 'Smart nutrition scanner'
     },
     {
-      src: './../assets/img/project-img3.png',
+      src: './assets/img/project-img3.png',
       caption: 'Smart traffic management system'
     },
     {
-      src: './../assets/img/project-img1.png',
+      src: './assets/img/project-img1.png',
       caption: 'LMS for students'
     }
   ];
