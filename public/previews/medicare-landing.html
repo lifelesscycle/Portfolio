@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MediCare — a two-portal healthcare platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,560;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F6F1;
+    --paper-dim:#EDEEE7;
+    --ink:#16231D;
+    --ink-soft:#4B564E;
+    --teal:#2F6B58;
+    --teal-deep:#1F4B3D;
+    --brick:#B65B3D;
+    --line:#DBDFD5;
+    --tan:#EAE6D9;
+    --white:#FFFFFF;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+  ::selection{background:var(--teal);color:var(--paper);}
+
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--teal-deep);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px;height:1px;
+    background:var(--brick);
+    display:inline-block;
+  }
+
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:560;
+    margin:0;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+  section{position:relative;}
+
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--brick);
+    outline-offset:3px;
+  }
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:sticky; top:0; z-index:40;
+    background:rgba(245,246,241,.86);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1180px;margin:0 auto;padding:16px 32px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:650;font-size:19px;}
+  .brand svg{width:22px;height:22px;flex:none;}
+  .nav-links{display:flex;gap:28px;align-items:center;}
+  .nav-links a{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
+    text-decoration:none;color:var(--ink-soft);
+    padding:6px 0;border-bottom:1px solid transparent;
+    transition:color .2s, border-color .2s;
+  }
+  .nav-links a:hover{color:var(--ink);border-color:var(--brick);}
+  .nav-cta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--teal-deep);color:var(--paper);
+    padding:9px 16px;border-radius:3px;text-decoration:none;
+    border:1px solid var(--teal-deep);
+    transition:background .2s, color .2s;
+  }
+  .nav-cta:hover{background:transparent;color:var(--teal-deep);}
+  @media (max-width:760px){ .nav-links{display:none;} }
+
+  /* ---------- HERO ---------- */
+  .hero{padding:76px 0 40px;overflow:hidden;}
+  .hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center;}
+  @media (max-width:920px){ .hero-grid{grid-template-columns:1fr;} }
+
+  .hero h1{font-size:clamp(34px,4.6vw,54px);line-height:1.08;margin-top:18px;}
+  .hero h1 em{font-style:italic;color:var(--teal);}
+  .hero p.lede{
+    margin-top:22px;max-width:46ch;color:var(--ink-soft);font-size:17px;
+  }
+  .hero-ctas{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap;}
+  .btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    padding:13px 22px;border-radius:3px;text-decoration:none;
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--ink);transition:transform .15s, background .2s, color .2s;
+  }
+  .btn-solid{background:var(--ink);color:var(--paper);}
+  .btn-solid:hover{background:var(--teal-deep);border-color:var(--teal-deep);transform:translateY(-1px);}
+  .btn-ghost{background:transparent;color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--brick);color:var(--brick);transform:translateY(-1px);}
+
+  /* pulse line */
+  .pulse-track{position:relative;height:26px;margin-top:34px;}
+  .pulse-track svg{width:100%;height:100%;overflow:visible;}
+  .pulse-path{
+    fill:none;stroke:var(--brick);stroke-width:2;
+    stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:600;stroke-dashoffset:600;
+    animation:draw 2.6s ease-out .3s forwards;
+  }
+  @keyframes draw{ to{stroke-dashoffset:0;} }
+
+  /* browser frame */
+  .frame{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 24px 60px -30px rgba(22,35,29,.35);
+    overflow:hidden;
+  }
+  .frame-bar{
+    display:flex;align-items:center;gap:8px;
+    padding:9px 12px;background:var(--paper-dim);
+    border-bottom:1px solid var(--line);
+  }
+  .frame-dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+  .frame-dot:nth-child(1){background:#D8AE99;}
+  .frame-dot:nth-child(2){background:#D8CD99;}
+  .frame-dot:nth-child(3){background:#A9C7B4;}
+  .frame-url{
+    margin-left:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--ink-soft);background:var(--white);
+    border:1px solid var(--line);border-radius:20px;padding:3px 12px;
+  }
+  .frame img{width:100%;display:block;}
+  .hero-visual{position:relative;}
+  .hero-visual .frame{transform:rotate(1.4deg);}
+  .hero-visual .tag{
+    position:absolute;bottom:-16px;left:-16px;
+    background:var(--teal-deep);color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.04em;
+    padding:8px 14px;border-radius:3px;box-shadow:0 10px 24px -12px rgba(0,0,0,.4);
+  }
+  @media (max-width:920px){ .hero-visual .frame{transform:none;} }
+
+  /* ---------- STAT STRIP ---------- */
+  .stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper-dim);}
+  .stats-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    max-width:1180px;margin:0 auto;
+  }
+  .stat{
+    padding:30px 32px;border-left:1px solid var(--line);
+  }
+  .stat:first-child{border-left:none;}
+  .stat .num{font-family:'Fraunces',serif;font-weight:560;font-size:38px;color:var(--teal-deep);}
+  .stat .label{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px;}
+  @media (max-width:760px){
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .stat:nth-child(3){border-left:none;}
+  }
+
+  /* ---------- SECTION HEADS ---------- */
+  .section-head{max-width:64ch;margin:0 0 46px;}
+  .section-head h2{font-size:clamp(28px,3.4vw,40px);margin-top:16px;line-height:1.14;}
+  .section-head p{color:var(--ink-soft);margin-top:16px;font-size:16.5px;max-width:56ch;}
+  .section-pad{padding:96px 0;}
+
+  /* divider ekg */
+  .divider{padding:8px 0 0;}
+  .divider svg{width:100%;height:34px;display:block;}
+  .divider path{
+    fill:none;stroke:var(--line);stroke-width:1.4;
+  }
+  .divider path.live{stroke:var(--teal);stroke-width:1.6;stroke-dasharray:900;stroke-dashoffset:900;transition:stroke-dashoffset 1.4s ease-out;}
+  .divider.in-view path.live{stroke-dashoffset:0;}
+
+  /* ---------- PATIENT STEPS ---------- */
+  .steps{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:26px;
+  }
+  @media (max-width:980px){ .steps{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .steps{grid-template-columns:1fr;} }
+
+  .step-card .frame{margin-bottom:16px;}
+  .step-card .step-no{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brick);letter-spacing:.06em;
+  }
+  .step-card h3{font-size:19px;margin-top:6px;font-weight:560;}
+  .step-card p{color:var(--ink-soft);font-size:14.5px;margin-top:8px;}
+
+  /* ---------- DOCTOR GRID ---------- */
+  .doc-band{background:var(--ink);color:var(--paper);}
+  .doc-band .section-head h2{color:var(--paper);}
+  .doc-band .section-head p{color:#B9C4BC;}
+  .doc-band .eyebrow{color:#8FD0B4;}
+  .doc-band .eyebrow::before{background:#E38868;}
+
+  .feature-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:22px;
+  }
+  @media (max-width:980px){ .feature-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:640px){ .feature-grid{grid-template-columns:1fr;} }
+
+  .feature-card{
+    background:#1D2B24;border:1px solid #2C3B33;border-radius:10px;
+    overflow:hidden;transition:transform .25s, border-color .25s;
+  }
+  .feature-card:hover{transform:translateY(-4px);border-color:#436C58;}
+  .feature-card .frame{border-radius:0;border:none;box-shadow:none;border-bottom:1px solid #2C3B33;}
+  .feature-card .frame-bar{background:#16211B;border-bottom:1px solid #2C3B33;}
+  .feature-card .frame-url{background:#16211B;color:#9FB0A7;border-color:#2C3B33;}
+  .feature-body{padding:18px 20px 22px;}
+  .feature-tag{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:#8FD0B4;
+  }
+  .feature-body h3{color:var(--paper);font-size:17.5px;margin-top:8px;font-weight:560;}
+  .feature-body p{color:#B9C4BC;font-size:14px;margin-top:8px;}
+
+  /* ---------- TECH / SIGNATURE ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;}
+  .chip{
+    background:var(--tan);border:1px solid var(--line);
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;
+    padding:9px 14px;border-radius:20px;color:var(--ink-soft);
+  }
+
+  .under-hood{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;}
+  @media (max-width:900px){ .under-hood{grid-template-columns:1fr;gap:36px;} }
+  .vitals-card{
+    background:var(--white);border:1px solid var(--line);border-radius:10px;padding:28px;
+  }
+  .vitals-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--line);font-size:14.5px;}
+  .vitals-row:last-child{border-bottom:none;}
+  .vitals-row .k{color:var(--ink-soft);}
+  .vitals-row .v{font-family:'IBM Plex Mono',monospace;color:var(--ink);}
+
+  /* ---------- CLOSING ---------- */
+  .closing{
+    background:var(--teal-deep);color:var(--paper);border-radius:16px;
+    padding:64px 56px;margin:0 32px 0;
+    display:flex;justify-content:space-between;align-items:center;gap:40px;flex-wrap:wrap;
+  }
+  .closing h2{color:var(--paper);font-size:clamp(26px,3.2vw,36px);max-width:20ch;}
+  .closing .btn-solid{background:var(--paper);color:var(--teal-deep);border-color:var(--paper);}
+  .closing .btn-solid:hover{background:var(--brick);color:var(--paper);border-color:var(--brick);}
+  .closing .btn-ghost{border-color:rgba(245,246,241,.5);color:var(--paper);}
+  .closing .btn-ghost:hover{border-color:var(--brick);color:#F1B79E;}
+
+  footer{padding:40px 32px 60px;}
+  .foot-row{
+    max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);
+    border-top:1px solid var(--line);padding-top:22px;flex-wrap:wrap;gap:10px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .pulse-path{animation:none;stroke-dashoffset:0;}
+    .divider path.live{transition:none;stroke-dashoffset:0;}
+    .feature-card, .btn{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <svg viewBox="0 0 24 24"><path d="M2 12h4l2-6 4 12 2-6h8" fill="none" stroke="#B65B3D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      MediCare
+    </div>
+    <div class="nav-links">
+      <a href="#patient">Patient side</a>
+      <a href="#doctor">Doctor side</a>
+      <a href="#build">Under the hood</a>
+    </div>
+    <a class="nav-cta" href="#" title="Replace with your deployed URL">Open demo</a>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Case file — healthcare platform</span>
+      <h1>A clinic that runs on <em>two logins.</em></h1>
+      <p class="lede">One for the person who isn't feeling well. One for the person who helps them. MediCare pairs a calm patient-facing booking site with a full clinical dashboard — requests, schedules, charts, messaging, and payouts — built as one connected product.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-solid" href="#patient">Walk through it ↓</a>
+        <a class="btn btn-ghost" href="#" title="Replace with your deployed URL">Open live demo</a>
+      </div>
+      <div class="pulse-track" aria-hidden="true">
+        <svg viewBox="0 0 600 26" preserveAspectRatio="none">
+          <path class="pulse-path" d="M0 13 H210 L226 3 L242 23 L258 13 H600" />
+        </svg>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span>
+          <span class="frame-url">medicare.app</span>
+        </div>
+        <img src="assets/hero.jpg" alt="MediCare homepage with a doctor performing surgery in the background and an AI assistant chat panel open on the right" />
+      </div>
+      <div class="tag">On-page assistant: answers before the first click</div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= STATS ================= -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat"><div class="num mono">02</div><div class="label">Portals — patient site &amp; doctor dashboard</div></div>
+    <div class="stat"><div class="num mono">14</div><div class="label">Screens mapped, booking to billing</div></div>
+    <div class="stat"><div class="num mono">02</div><div class="label">Payout rails — Stripe and PayPal</div></div>
+    <div class="stat"><div class="num mono">01</div><div class="label">Inbox for calls, chat &amp; video, together</div></div>
+  </div>
+</section>
+
+<!-- ================= PATIENT SIDE ================= -->
+<section class="section-pad" id="patient">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">01 · Patient journey</span>
+      <h2>Booking a doctor shouldn't feel like paperwork.</h2>
+      <p>Four short screens carry a visitor from "I don't feel great" to "I have an appointment" — no forced sign-up wall, no dead ends.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/doctors</span></div>
+          <img src="assets/doctors.jpg" alt="Grid of doctor profile cards with photos, names and specialities" />
+        </div>
+        <div class="step-no mono">STEP 01</div>
+        <h3>Meet the team</h3>
+        <p>Browse specialists by name and speciality before committing to anyone.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/book</span></div>
+          <img src="assets/booking.jpg" alt="Quick booking form with patient name, phone number, department dropdown and date picker" />
+        </div>
+        <div class="step-no mono">STEP 02</div>
+        <h3>Book in one form</h3>
+        <p>Pick a department, a date, and describe the symptoms — an account can wait.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/login</span></div>
+          <img src="assets/login.jpg" alt="Login screen with email, password fields and continue with Google option" />
+        </div>
+        <div class="step-no mono">STEP 03</div>
+        <h3>Sign in, or don't</h3>
+        <p>Return with an email and password, or skip straight through with Google.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/register</span></div>
+          <img src="assets/register.jpg" alt="Patient registration form with personal details, date of birth, gender, blood group and contact fields" />
+        </div>
+        <div class="step-no mono">STEP 04</div>
+        <h3>Tell us who you are</h3>
+        <p>One intake form captures what a doctor will actually ask at the first visit.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap divider" id="ekg-1">
+  <svg viewBox="0 0 1180 34" preserveAspectRatio="none">
+    <path d="M0 17 H1180" />
+    <path class="live" d="M0 17 H480 L497 4 L514 30 L531 17 H1180" />
+  </svg>
+</div>
+
+<!-- ================= DOCTOR SIDE ================= -->
+<section class="section-pad doc-band" id="doctor">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">02 · Provider dashboard</span>
+      <h2>Everything a doctor's day touches, in one screen.</h2>
+      <p>Dr. Edalin Hendry's dashboard is the other half of the product — where a booking request turns into a kept appointment, a chart note, and eventually a paid invoice.</p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/requests</span></div>
+          <img src="assets/requests.jpg" alt="Incoming appointment requests list with accept and reject buttons" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Requests</span>
+          <h3>A queue, not an inbox flood</h3>
+          <p>New bookings wait here — video call, audio call, or in person — until a doctor accepts or declines them.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/appointments</span></div>
+          <img src="assets/appts.jpg" alt="Appointments board with upcoming, cancelled and completed tabs" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Schedule</span>
+          <h3>Upcoming, done, and cancelled</h3>
+          <p>One filterable board, searchable by patient name — not by memory of who booked what.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/dashboard</span></div>
+          <img src="assets/dash.jpg" alt="Dashboard overview with total patients, patients today, appointments today and a weekly revenue chart" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Overview</span>
+          <h3>The day, at a glance</h3>
+          <p>Patients today, revenue this week, and who's next — the numbers a doctor actually opens the app to see.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/patients</span></div>
+          <img src="assets/patients.jpg" alt="My patients table with appointments, prescriptions, medical records and billing tabs" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">My patients</span>
+          <h3>One profile, whole history</h3>
+          <p>Appointments, prescriptions, records, and billing for each patient, filed under a single name.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/availability</span></div>
+          <img src="assets/timings.jpg" alt="Available timings screen with day tabs and time slot chips for Monday" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Availability</span>
+          <h3>Open hours, set in seconds</h3>
+          <p>Add or remove slots day by day — no back-and-forth emails to hold a time open.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/messages</span></div>
+          <img src="assets/messages.jpg" alt="Chat conversation with a patient including a voice note and a shared video link" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Messages</span>
+          <h3>Every channel, one thread</h3>
+          <p>A doctor replies with text, a voice note, or a video link — the patient sees one continuous conversation.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/payouts</span></div>
+          <img src="assets/payouts.jpg" alt="Payout settings with Stripe and PayPal options and a table of completed payouts" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Payouts</span>
+          <h3>Pick a rail, get paid</h3>
+          <p>Stripe or PayPal, configured once — then every completed transfer is tracked underneath.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/invoices</span></div>
+          <img src="assets/invoices.jpg" alt="Invoices table with patient, appointment date, booking date, amount and status columns" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Invoices</span>
+          <h3>Every visit, on paper</h3>
+          <p>Each booking becomes a printable invoice, linked back to the appointment it came from.</p>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="frame">
+          <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-url">/profile</span></div>
+          <img src="assets/profile.jpg" alt="Profile settings with tabs for basic details, experience, education, awards, clinics and business hours" />
+        </div>
+        <div class="feature-body">
+          <span class="feature-tag">Profile</span>
+          <h3>Their own credentials, their call</h3>
+          <p>Bio, education, clinics, and business hours — a doctor edits all of it without asking an admin.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap divider" id="ekg-2">
+  <svg viewBox="0 0 1180 34" preserveAspectRatio="none">
+    <path d="M0 17 H1180" />
+    <path class="live" d="M0 17 H620 L637 4 L654 30 L671 17 H1180" />
+  </svg>
+</div>
+
+<!-- ================= UNDER THE HOOD ================= -->
+<section class="section-pad" id="build">
+  <div class="wrap">
+    <div class="under-hood">
+      <div>
+        <span class="eyebrow">03 · Under the hood</span>
+        <h2 style="font-size:clamp(26px,3vw,34px);margin-top:16px;line-height:1.16;">Two audiences, one system of record.</h2>
+        <p style="color:var(--ink-soft);margin-top:16px;max-width:52ch;">The hard part of a platform like this isn't either portal on its own — it's keeping them honest with each other. A request accepted on the doctor's side has to show up as a confirmed booking on the patient's side, on the same clock.</p>
+        <div class="chips">
+          <span class="chip">Role-based dashboards</span>
+          <span class="chip">Accept / reject workflow</span>
+          <span class="chip">Real-time messaging</span>
+          <span class="chip">Stripe + PayPal payouts</span>
+          <span class="chip">Printable invoicing</span>
+          <span class="chip">Slot-based availability</span>
+          <span class="chip">On-page AI assistant</span>
+        </div>
+      </div>
+
+      <div class="vitals-card">
+        <span class="eyebrow" style="margin-bottom:14px;">Patient chart · read-only</span>
+        <div class="vitals-row"><span class="k">Front door</span><span class="v">Homepage, doctors, departments, about, contact</span></div>
+        <div class="vitals-row"><span class="k">Conversion path</span><span class="v">Quick booking → auth → intake form</span></div>
+        <div class="vitals-row"><span class="k">Provider core</span><span class="v">Requests, schedule, patients, availability</span></div>
+        <div class="vitals-row"><span class="k">Money</span><span class="v">Invoices, payouts, dual payment rails</span></div>
+        <div class="vitals-row"><span class="k">Comms</span><span class="v">In-app chat with voice notes &amp; video links</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CLOSING ================= -->
+<section style="padding:0 0 90px;">
+  <div class="closing">
+    <h2>See it running, not just described.</h2>
+    <div class="hero-ctas" style="margin-top:0;">
+      <a class="btn btn-solid" href="#" title="Replace with your deployed URL">Open live demo</a>
+      <a class="btn btn-ghost" href="#" title="Replace with your repository URL">View the code</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-row">
+    <span>MediCare — a two-portal healthcare platform, case study</span>
+    <span>Screens shown are from the working build</span>
+  </div>
+</footer>
+
+<script>
+  // reveal the EKG dividers as they scroll into view
+  const dividers = document.querySelectorAll('.divider');
+  if ('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('in-view'); io.unobserve(e.target); }
+      });
+    }, {threshold:.4});
+    dividers.forEach(d=>io.observe(d));
+  } else {
+    dividers.forEach(d=>d.classList.add('in-view'));
+  }
+</script>
+
+</body>
+</html>

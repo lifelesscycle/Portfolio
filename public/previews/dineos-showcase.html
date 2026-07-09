@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DineOS — Café POS, built from the counter up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --espresso:#241209;
+    --espresso-2:#170c05;
+    --cream:#efe8da;
+    --cream-soft:#f8f4ec;
+    --paper:#fdfbf5;
+    --amber:#d89b4a;
+    --amber-deep:#b5792c;
+    --sage:#4c7a5e;
+    --rust:#b5482f;
+    --ink:#2b2119;
+    --ink-soft:#6f6152;
+    --rule: rgba(43,33,25,0.14);
+    --shadow: 0 18px 40px -20px rgba(23,12,5,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    overflow-x:hidden;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,56px);}
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color: var(--amber-deep);
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px;height:2px;background:var(--amber-deep);display:inline-block;
+  }
+  h1,h2,h3{
+    font-family:'Playfair Display', serif;
+    margin:0;
+    color: var(--espresso);
+  }
+  p{margin:0;}
+
+  /* ---------- window chrome (echoes the app's own title bar) ---------- */
+  .chrome{
+    background: var(--espresso);
+    border-radius: 12px 12px 0 0;
+    padding: 10px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'Playfair Display', serif;
+    color:#f4ead9;
+  }
+  .chrome .brand{display:flex;align-items:center;gap:8px;font-size:13px;}
+  .chrome .brand .dot{width:16px;height:16px;border-radius:4px;background:var(--amber);display:inline-block;}
+  .chrome .ctrls{display:flex;gap:14px;opacity:.55;font-size:12px;font-family:'Inter',sans-serif;}
+  .shot-frame{
+    border-radius:12px;
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    border:1px solid rgba(23,12,5,0.08);
+    background:var(--espresso);
+  }
+  .shot-frame img{display:block;width:100%;}
+
+  /* ================= HERO ================= */
+  header.hero{
+    padding: clamp(48px,7vw,88px) 0 clamp(40px,6vw,64px);
+    position:relative;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(28px,5vw,64px);
+    align-items:center;
+  }
+  .hero h1{
+    font-size: clamp(38px,5.4vw,60px);
+    line-height:1.03;
+    margin-top:14px;
+    letter-spacing:-.01em;
+  }
+  .hero h1 em{
+    font-style:italic;
+    color: var(--amber-deep);
+  }
+  .hero-lede{
+    margin-top:18px;
+    font-size:17px;
+    color: var(--ink-soft);
+    max-width:46ch;
+  }
+  .hero-actions{
+    margin-top:28px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:12px 22px;
+    border-radius:8px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .btn:hover{transform: translateY(-2px);}
+  .btn-primary{background:var(--amber-deep); color:#fff8ec; box-shadow: 0 10px 24px -10px rgba(181,121,44,.65);}
+  .btn-ghost{background:transparent;border-color:var(--rule); color:var(--espresso);}
+
+  .receipt-strip{
+    margin-top:34px;
+    display:flex;
+    gap:0;
+    font-family:'JetBrains Mono', monospace;
+    border-top:1px dashed var(--rule);
+    padding-top:16px;
+  }
+  .receipt-strip div{
+    flex:1;
+    padding-right:14px;
+  }
+  .receipt-strip .num{font-size:20px; font-weight:700; color:var(--espresso);}
+  .receipt-strip .lbl{font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-top:2px;}
+
+  .hero-visual{position:relative; height:100%;}
+  .hero-visual .shot-frame.back{
+    position:absolute; top:0; right:0; width:78%;
+    transform: rotate(2.2deg);
+    opacity:.9;
+    z-index:1;
+  }
+  .hero-visual .shot-frame.front{
+    position:relative; width:92%; margin-top:64px;
+    transform: rotate(-2.5deg);
+    z-index:2;
+  }
+
+  @media (max-width: 860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-visual{height:auto; margin-top:36px;}
+    .hero-visual .shot-frame.back{position:relative; width:100%; transform:none; margin-bottom:-40px;}
+    .hero-visual .shot-frame.front{width:88%; margin-top:-30px; margin-left:auto; transform:none;}
+    .receipt-strip{flex-wrap:wrap;}
+    .receipt-strip div{flex:1 1 45%; margin-bottom:14px;}
+  }
+
+  /* ================= NARRATIVE ================= */
+  section.story{
+    padding: clamp(48px,7vw,80px) 0;
+    border-top:1px solid var(--rule);
+  }
+  .story-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(24px,4vw,48px);
+  }
+  .story-card h3{font-size:22px; margin-bottom:10px; font-style:italic;}
+  .story-card p{color:var(--ink-soft); font-size:15.5px;}
+  .story-card .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--rust); font-weight:700; margin-bottom:10px; display:block;
+  }
+  .story-card:nth-child(2) .tag{color:var(--sage);}
+  @media (max-width:700px){ .story-grid{grid-template-columns:1fr;} }
+
+  /* ================= FEATURES ================= */
+  section.features{
+    padding: clamp(48px,7vw,80px) 0;
+    background: var(--cream-soft);
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+  }
+  .features h2{font-size: clamp(28px,4vw,38px); max-width:16ch;}
+  .features .sub{color:var(--ink-soft); margin-top:12px; max-width:56ch; font-size:15.5px;}
+  .feature-grid{
+    margin-top:40px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .feature-card{
+    background: var(--paper);
+    border:1px solid var(--rule);
+    border-radius:14px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition: box-shadow .2s ease, transform .2s ease;
+  }
+  .feature-card:hover{ box-shadow: var(--shadow); transform: translateY(-3px); }
+  .feature-card .thumb{ aspect-ratio: 16/10; overflow:hidden; border-bottom:1px solid var(--rule); background:var(--espresso);}
+  .feature-card .thumb img{width:100%; height:100%; object-fit:cover; object-position: top left;}
+  .feature-card .body{padding:18px 20px 22px;}
+  .feature-card .idx{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--amber-deep); font-weight:700; letter-spacing:.06em;
+  }
+  .feature-card h3{font-size:18px; margin-top:6px;}
+  .feature-card p{font-size:14px; color:var(--ink-soft); margin-top:8px;}
+  @media (max-width:900px){ .feature-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:600px){ .feature-grid{grid-template-columns:1fr;} }
+
+  /* ================= RECEIPT / TECH STACK ================= */
+  section.stack{
+    padding: clamp(48px,7vw,84px) 0;
+  }
+  .stack-inner{
+    display:grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: clamp(28px,5vw,56px);
+    align-items:start;
+  }
+  .stack h2{font-size:clamp(26px,3.6vw,34px);}
+  .stack p.sub{color:var(--ink-soft); margin-top:12px; font-size:15px; max-width:42ch;}
+  .paper{
+    background: var(--paper);
+    font-family:'JetBrains Mono', monospace;
+    font-size:13.5px;
+    padding: 28px 26px 22px;
+    box-shadow: var(--shadow);
+    position:relative;
+    border-radius: 2px;
+  }
+  .paper::after{
+    content:"";
+    position:absolute; left:0; right:0; bottom:-9px; height:18px;
+    background:
+      linear-gradient(-45deg, var(--cream) 8px, transparent 0),
+      linear-gradient(45deg, var(--cream) 8px, transparent 0);
+    background-size: 16px 18px;
+    background-repeat: repeat-x;
+  }
+  .paper .r-head{text-align:center; margin-bottom:14px;}
+  .paper .r-head .rname{font-family:'Playfair Display',serif; font-style:italic; font-size:19px; color:var(--espresso);}
+  .paper .r-head .rsub{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .paper hr{border:none; border-top:1px dashed var(--rule); margin:12px 0;}
+  .r-row{display:flex; justify-content:space-between; padding:5px 0; color:var(--ink);}
+  .r-row .item{color:var(--espresso);}
+  .r-row .role{color:var(--ink-soft); font-size:11.5px;}
+  .r-section{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--amber-deep); margin:14px 0 4px; font-weight:700;}
+  .r-total{display:flex; justify-content:space-between; font-weight:700; color:var(--espresso); padding-top:8px;}
+  @media (max-width:860px){ .stack-inner{grid-template-columns:1fr;} }
+
+  /* ================= GALLERY ================= */
+  section.gallery{
+    padding: clamp(48px,7vw,80px) 0;
+    border-top:1px solid var(--rule);
+    background: var(--cream-soft);
+  }
+  .gallery h2{font-size:clamp(26px,3.6vw,34px);}
+  .gallery .sub{color:var(--ink-soft); margin-top:10px; font-size:15px;}
+  .strip{
+    margin-top:30px;
+    display:flex;
+    gap:18px;
+    overflow-x:auto;
+    padding-bottom:14px;
+    scroll-snap-type:x proximity;
+  }
+  .strip::-webkit-scrollbar{height:8px;}
+  .strip::-webkit-scrollbar-thumb{background:var(--rule); border-radius:8px;}
+  .strip .card{
+    flex: 0 0 auto;
+    width: min(78vw, 340px);
+    scroll-snap-align:start;
+  }
+  .strip .card .cap{
+    margin-top:10px; font-size:13px; color:var(--ink-soft);
+    display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace;
+  }
+  .strip .card .cap b{color:var(--espresso); font-family:'Inter',sans-serif; font-weight:600;}
+
+  /* ================= CTA FOOTER ================= */
+  footer.cta{
+    padding: clamp(56px,8vw,96px) 0;
+    background: var(--espresso);
+    color: var(--cream);
+    text-align:center;
+  }
+  footer.cta h2{color:#f7ecdb; font-size:clamp(28px,4.4vw,42px); max-width:20ch; margin:0 auto;}
+  footer.cta p{color:#cbb9a2; margin-top:14px; font-size:15.5px;}
+  footer.cta .hero-actions{justify-content:center; margin-top:30px;}
+  footer.cta .btn-ghost{border-color:rgba(247,236,219,.3); color:#f7ecdb;}
+  footer.cta .foot-note{margin-top:36px; font-family:'JetBrains Mono',monospace; font-size:11px; color:#8a7a67; letter-spacing:.04em;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Case Study — Full‑stack POS</span>
+      <h1>Dine<em>OS</em><br>runs the whole counter.</h1>
+      <p class="hero-lede">A café point-of-sale desktop app built for a real, working café — order taking, table management, credit tabs, inventory, and receipt printing, all in one Electron window that stays open from the first cappuccino to the last bill of the night.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary">Open live demo →</button>
+        <button class="btn btn-ghost">View source</button>
+      </div>
+      <div class="receipt-strip">
+        <div><div class="num">70+</div><div class="lbl">Menu items served</div></div>
+        <div><div class="num">21</div><div class="lbl">Categories managed</div></div>
+        <div><div class="num">6</div><div class="lbl">Core modules</div></div>
+        <div><div class="num">1</div><div class="lbl">Electron window</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="shot-frame back">
+        <div class="chrome"><span class="brand"><span class="dot"></span>DineOS · Café POS</span><span class="ctrls">— &nbsp; ▢ &nbsp; ✕</span></div>
+        <img src="images/dashboard.png" alt="DineOS dashboard showing today's revenue, orders and hourly sales">
+      </div>
+      <div class="shot-frame front">
+        <div class="chrome"><span class="brand"><span class="dot"></span>Quick Order</span><span class="ctrls">— &nbsp; ▢ &nbsp; ✕</span></div>
+        <img src="images/quickorder.png" alt="DineOS quick order screen with menu grid and running cart">
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="story">
+  <div class="wrap story-grid">
+    <div class="story-card">
+      <span class="tag">The problem</span>
+      <h3>Cafés don't run on spreadsheets.</h3>
+      <p>TeenYaar Cafe needed one screen that could take an order, remember a regular's loyalty points, print a kitchen ticket, and still make sense to a staff member who's never touched a computer system before — without three different logins for three different jobs.</p>
+    </div>
+    <div class="story-card">
+      <span class="tag">The build</span>
+      <h3>One codebase, every role.</h3>
+      <p>I built DineOS as a single React front end over an Express + MongoDB backend, packaged into an Electron desktop app so it feels like software the café owns — not a browser tab that can be closed by accident. Role-based access keeps a cashier's view lean while giving the owner the full picture.</p>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="wrap">
+    <span class="eyebrow">What's inside</span>
+    <h2 style="margin-top:14px;">Six modules, one till.</h2>
+    <p class="sub">Every screen below is wired to the same live database — a table opened in Quick Order shows up instantly in Kitchen View, and a bill settled at the counter updates Reports before the receipt finishes printing.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="thumb"><img src="images/tables.png" alt="Table management grid showing table status"></div>
+        <div class="body">
+          <span class="idx">Floor</span>
+          <h3>Table &amp; order flow</h3>
+          <p>A live floor plan — available, occupied, reserved, cleaning — feeding straight into dynamic table ordering with cart sync, so a table's running order never falls out of step with what's on the till.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="thumb"><img src="images/customers.png" alt="Customer list with loyalty points and visit history"></div>
+        <div class="body">
+          <span class="idx">Access</span>
+          <h3>Role-based access control</h3>
+          <p>Frontend filtering plus a backend <code>requireRole</code> middleware keep cashiers, kitchen staff and the owner each looking at exactly what their job needs — and nothing they could break.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="thumb"><img src="images/credit.png" alt="Credit ledger showing outstanding and settled tabs"></div>
+        <div class="body">
+          <span class="idx">Tabs</span>
+          <h3>Credit ledger</h3>
+          <p>Regulars run a tab. DineOS tracks what's outstanding, what's overdue, and what's been settled — turning "I'll pay next time" into a number the owner can actually see.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="thumb"><img src="images/inventory.png" alt="Inventory screen tracking stock value and packaged products"></div>
+        <div class="body">
+          <span class="idx">Stock</span>
+          <h3>Inventory that deducts itself</h3>
+          <p>Packaged products decrement automatically the moment they're sold through billing, so stock counts stay honest without anyone doing an evening recount.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="thumb"><img src="images/billing.png" alt="Billing history split by cash, UPI and card"></div>
+        <div class="body">
+          <span class="idx">Till</span>
+          <h3>Billing, split by how they paid</h3>
+          <p>Every bill lands in a searchable history, broken down by cash, UPI and card — the same three buckets the owner already thinks in.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="thumb"><img src="images/reports.png" alt="Reports and analytics dashboard with date range filters"></div>
+        <div class="body">
+          <span class="idx">Insight</span>
+          <h3>Reports across any date range</h3>
+          <p>Overview, profit &amp; loss, item-wise, payment-wise, customer and credit reports — filterable from "today" to "last 30 days" and exportable to Excel or PDF for whoever does the books.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stack">
+  <div class="wrap stack-inner">
+    <div>
+      <span class="eyebrow">Under the hood</span>
+      <h2 style="margin-top:14px;">Built like a receipt — itemised, nothing hidden.</h2>
+      <p class="sub">The stack behind the counter: a React front end talking to an Express API, printer hardware bridged over WebSockets, and the whole thing shipped as a real desktop install rather than a website pretending to be one.</p>
+      <div class="hero-actions" style="margin-top:26px;">
+        <button class="btn btn-primary">See it running →</button>
+      </div>
+    </div>
+    <div class="paper">
+      <div class="r-head">
+        <div class="rname">DineOS — Build Ticket</div>
+        <div class="rsub">TeenYaar Cafe · Table 1 · 1 window</div>
+      </div>
+      <div class="r-section">Front of house</div>
+      <div class="r-row"><span class="item">React (HashRouter)</span><span class="role">UI &amp; routing</span></div>
+      <div class="r-row"><span class="item">Electron</span><span class="role">desktop shell</span></div>
+      <hr>
+      <div class="r-section">Back of house</div>
+      <div class="r-row"><span class="item">Node.js + Express</span><span class="role">API layer</span></div>
+      <div class="r-row"><span class="item">MongoDB</span><span class="role">orders, stock, tabs</span></div>
+      <div class="r-row"><span class="item">requireRole middleware</span><span class="role">access control</span></div>
+      <hr>
+      <div class="r-section">Hardware &amp; deploy</div>
+      <div class="r-row"><span class="item">WebSocket printer bridge</span><span class="role">COM / serial detect</span></div>
+      <div class="r-row"><span class="item">Railway</span><span class="role">backend host</span></div>
+      <div class="r-row"><span class="item">Vercel</span><span class="role">frontend host</span></div>
+      <hr>
+      <div class="r-total"><span>Total modules shipped</span><span>6</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="gallery">
+  <div class="wrap">
+    <span class="eyebrow">Around the app</span>
+    <h2 style="margin-top:14px;">More screens, same counter.</h2>
+    <p class="sub">Scroll through — every screen is the same live install, not mockups.</p>
+    <div class="strip">
+      <div class="card">
+        <div class="shot-frame"><img src="images/menu.png" alt="Menu management with 70 items across 21 categories"></div>
+        <div class="cap"><b>Menu Management</b><span>70 items</span></div>
+      </div>
+      <div class="card">
+        <div class="shot-frame"><img src="images/settings.png" alt="Café info settings screen"></div>
+        <div class="cap"><b>Café Info</b><span>settings</span></div>
+      </div>
+      <div class="card">
+        <div class="shot-frame"><img src="images/quickorder.png" alt="Quick order screen"></div>
+        <div class="cap"><b>Quick Order</b><span>dine-in / takeaway</span></div>
+      </div>
+      <div class="card">
+        <div class="shot-frame"><img src="images/tables.png" alt="Table management screen"></div>
+        <div class="cap"><b>Tables</b><span>live floor plan</span></div>
+      </div>
+      <div class="card">
+        <div class="shot-frame"><img src="images/reports.png" alt="Reports and analytics screen"></div>
+        <div class="cap"><b>Reports</b><span>P&amp;L, item-wise</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="cta">
+  <div class="wrap">
+    <h2>Try running a shift on DineOS.</h2>
+    <p>Open a table, ring up an order, and watch it land in reports in real time.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary">Open live demo →</button>
+      <button class="btn btn-ghost">View the code on GitHub</button>
+    </div>
+    <div class="foot-note">DineOS — Café POS · React · Express · MongoDB · Electron</div>
+  </div>
+</footer>
+
+</body>
+</html>

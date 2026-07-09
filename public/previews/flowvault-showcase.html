@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FlowVault — Enterprise Finance Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#0a0920;
+    --navy-900:#15123c;
+    --navy-800:#211a52;
+    --violet-glow:#7c5cff;
+    --indigo-600:#5a4fe0;
+    --indigo-500:#8177f5;
+    --indigo-200:#c7c3ff;
+    --mint-500:#12b886;
+    --mint-100:#d8f5ec;
+    --amber-500:#f2994a;
+    --rose-500:#e8595f;
+    --paper:#f5f6fb;
+    --card:#ffffff;
+    --ink-900:#15142b;
+    --ink-600:#514f6e;
+    --ink-400:#8b88a6;
+    --line:#e3e1f0;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink-900);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 28px;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--indigo-200);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    background:
+      radial-gradient(640px 380px at 90% -12%, rgba(124,92,255,0.38), transparent 60%),
+      radial-gradient(520px 320px at -6% 70%, rgba(18,184,134,0.10), transparent 60%),
+      linear-gradient(175deg, var(--navy-950) 0%, var(--navy-900) 48%, var(--navy-800) 100%);
+    color:#fff;
+    padding:56px 0 64px;
+    overflow:hidden;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  .hero .wrap{position:relative;z-index:1;}
+  .brandrow{display:flex;align-items:center;gap:10px;margin-bottom:40px;}
+  .brandmark{
+    width:32px;height:32px;border-radius:9px;
+    background:linear-gradient(150deg,#9b8dff,var(--indigo-600) 65%,#3f36b8);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;
+    box-shadow:0 6px 18px rgba(90,79,224,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .brandtext{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;}
+  .brandtext span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:11px;color:var(--indigo-200);letter-spacing:.03em;}
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    color:var(--indigo-200);text-transform:uppercase;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mint-500);box-shadow:0 0 0 3px rgba(18,184,134,0.25);}
+
+  .hero h1{font-size:clamp(34px,6vw,50px);font-weight:600;line-height:1.06;}
+  .hero h1 em{
+    font-style:normal;color:var(--mint-500);
+    background:linear-gradient(90deg,var(--mint-500),#7fe8c9);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lead{
+    max-width:480px;margin-top:16px;color:rgba(255,255,255,0.72);font-size:15.5px;
+  }
+
+  .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;}
+  .stat-chip{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:12px;padding:10px 16px;min-width:118px;
+    backdrop-filter:blur(6px);
+  }
+  .stat-chip b{display:block;font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;color:#fff;}
+  .stat-chip span{font-size:11px;color:var(--indigo-200);text-transform:uppercase;letter-spacing:.05em;}
+
+  .hero-cta{display:flex;align-items:center;gap:16px;margin-top:32px;flex-wrap:wrap;}
+  .btn-primary{
+    background:linear-gradient(135deg,#8177f5,var(--indigo-600));color:#fff;border:none;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;
+    padding:13px 22px;border-radius:11px;cursor:pointer;
+    box-shadow:0 10px 24px rgba(90,79,224,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition:transform .15s ease, box-shadow .15s ease;
+    text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(90,79,224,0.5), inset 0 1px 0 rgba(255,255,255,0.25);}
+  .cred-chip{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(255,255,255,0.65);
+    border-left:2px solid var(--mint-500);padding-left:10px;
+  }
+  .cred-chip b{color:#fff;font-weight:500;}
+
+  /* mock chart card floated top-right on wide screens */
+  .chart-card{
+    margin-top:36px;background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.12);border-radius:14px;
+    padding:18px 20px 10px;backdrop-filter:blur(6px);
+  }
+  .chart-card .ch-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .chart-card .ch-head span{font-size:12px;color:rgba(255,255,255,0.55);font-family:'IBM Plex Mono',monospace;}
+  .legend{display:flex;gap:14px;margin-top:6px;}
+  .legend div{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.6);}
+  .dot{width:7px;height:7px;border-radius:50%;}
+
+  /* ---------- SECTION shared ---------- */
+  section{padding:52px 0;}
+  .section-head{max-width:560px;margin-bottom:34px;}
+  .section-head .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--indigo-600);margin-bottom:8px;display:block;
+  }
+  .section-head h2{font-size:26px;font-weight:600;}
+  .section-head p{color:var(--ink-600);margin-top:10px;font-size:14.5px;}
+
+  /* ---------- STORY ---------- */
+  .story p{color:var(--ink-600);font-size:15px;max-width:640px;}
+  .story p + p{margin-top:12px;}
+  .story strong{color:var(--ink-900);}
+
+  /* ---------- PIPELINE (signature) ---------- */
+  .pipeline{position:relative;padding-left:6px;}
+  .pipeline::before{
+    content:"";position:absolute;left:23px;top:8px;bottom:8px;width:2px;
+    background:repeating-linear-gradient(to bottom, var(--line) 0 6px, transparent 6px 12px);
+  }
+  .stage{
+    position:relative;display:flex;gap:20px;padding:0 0 34px 0;
+    opacity:0;transform:translateY(14px);
+    transition:opacity .55s ease, transform .55s ease;
+  }
+  .stage.in{opacity:1;transform:translateY(0);}
+  .stage:last-child{padding-bottom:0;}
+  .stamp{
+    flex:0 0 auto;width:48px;height:48px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:#fff;border:2.5px solid var(--indigo-600);
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;color:var(--indigo-600);
+    position:relative;z-index:1;
+    transform:scale(0.6) rotate(-14deg);
+    transition:transform .5s cubic-bezier(.2,1.4,.4,1) .1s;
+  }
+  .stage.in .stamp{transform:scale(1) rotate(-6deg);}
+  .stage:last-child .stamp{background:var(--mint-500);border-color:var(--mint-500);color:#fff;}
+  .stage-body{padding-top:4px;}
+  .stage-body .role{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-400);
+    text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;
+  }
+  .stage-body h3{font-size:17px;font-weight:600;margin-bottom:4px;}
+  .stage-body p{margin:0;color:var(--ink-600);font-size:14px;max-width:460px;}
+
+  /* ---------- FEATURE GRID ---------- */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media(max-width:620px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover{border-color:var(--indigo-500);transform:translateY(-3px);box-shadow:0 14px 28px rgba(21,20,43,0.06);}
+  .card .icon{
+    width:36px;height:36px;border-radius:9px;background:var(--mint-100);
+    display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+  }
+  .card h3{font-size:15.5px;font-weight:600;margin-bottom:6px;}
+  .card p{color:var(--ink-600);font-size:13.5px;margin:0 0 10px;}
+  .rule-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .rule-list li{
+    display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12px;
+    color:var(--ink-600);border-top:1px dashed var(--line);padding-top:6px;
+  }
+  .rule-list li:first-child{border-top:none;padding-top:0;}
+  .rule-list b{color:var(--ink-900);}
+  .mini-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+  .mini-chip{
+    font-size:11px;font-family:'IBM Plex Mono',monospace;background:var(--paper);
+    border:1px solid var(--line);border-radius:20px;padding:4px 10px;color:var(--ink-600);
+  }
+  .dept-bars{display:flex;flex-direction:column;gap:8px;margin-top:2px;}
+  .dept-row{display:flex;align-items:center;gap:10px;}
+  .dept-row .label{width:64px;font-size:11.5px;color:var(--ink-600);font-family:'IBM Plex Mono',monospace;flex:0 0 auto;}
+  .dept-row .bar-track{flex:1;height:6px;border-radius:4px;background:var(--paper);overflow:hidden;}
+  .dept-row .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--indigo-500),var(--mint-500));}
+
+  /* ---------- TECH STACK ---------- */
+  .stack-groups{display:flex;flex-direction:column;gap:16px;}
+  .stack-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;}
+  .stack-row .layer{
+    flex:0 0 96px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-400);
+    text-transform:uppercase;letter-spacing:.06em;padding-top:8px;
+  }
+  .chip-set{display:flex;flex-wrap:wrap;gap:8px;flex:1;}
+  .chip{
+    background:var(--navy-950);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:12px;
+    padding:7px 12px;border-radius:8px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--navy-950);color:#fff;padding:48px 0 40px;
+    text-align:center;
+  }
+  footer h2{font-size:24px;font-weight:600;margin-bottom:10px;}
+  footer p{color:rgba(255,255,255,0.6);font-size:14px;max-width:420px;margin:0 auto 24px;}
+  footer .foot-note{
+    margin-top:26px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:rgba(255,255,255,0.35);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .stage,.stamp{transition:none;opacity:1;transform:none;}
+  }
+
+  :focus-visible{outline:2px solid var(--indigo-500);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="brandrow">
+      <div class="brandmark">FV</div>
+      <div class="brandtext">FlowVault<span>Enterprise Finance Platform</span></div>
+    </div>
+
+    <span class="eyebrow">Case study · fund approval system</span>
+    <h1>Every rupee,<br><em>fully accounted.</em></h1>
+    <p class="lead">A multi-level fund request and disbursement platform with a five-stage approval chain, real-time disbursements, and an immutable audit trail — built for teams of 200 to 2000+.</p>
+
+    <div class="stat-row">
+      <div class="stat-chip"><b>5</b><span>Approval stages</span></div>
+      <div class="stat-chip"><b>9+</b><span>Report types</span></div>
+      <div class="stat-chip"><b>3×</b><span>Platforms</span></div>
+    </div>
+
+    <div class="hero-cta">
+      <a class="btn-primary" href="#pipeline">See how it works →</a>
+      <div class="cred-chip">demo login&nbsp; <b>admin@flowvault.dev</b></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="ch-head">
+        <span>FUND FLOW — 2026</span>
+        <span>₹0 – ₹60L</span>
+      </div>
+      <svg viewBox="0 0 560 110" width="100%" height="90" preserveAspectRatio="none">
+        <polyline points="0,70 80,55 160,58 240,40 320,44 400,20 480,24 560,18"
+          fill="none" stroke="#8177f5" stroke-width="2.2" opacity="0.9"/>
+        <polyline points="0,90 80,78 160,80 240,66 320,68 400,48 480,50 560,46"
+          fill="none" stroke="#12b886" stroke-width="2.2"/>
+      </svg>
+      <div class="legend">
+        <div><span class="dot" style="background:#8177f5"></span>Requested</div>
+        <div><span class="dot" style="background:#12b886"></span>Approved</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STORY -->
+<section class="story">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="tag">The problem</span>
+      <h2>Fund requests used to live in inboxes.</h2>
+    </div>
+    <p>Mid-size organizations approve spend across email threads, spreadsheets, and verbal sign-offs — with no single record of who approved what, when, or why. Deductions like GST and TDS get calculated by hand, and finance teams reconcile everything after the fact.</p>
+    <p><strong>FlowVault</strong> replaces that with one pipeline: a requester submits, a validator checks completeness, a department head approves and sets terms, finance applies the org's own deduction rules, and funds are released — every step timestamped and unchangeable.</p>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="tag">The approval chain</span>
+      <h2>Five stages. One rupee at a time.</h2>
+      <p>Each request moves through a fixed sequence — no stage can be skipped, and every stamp is logged to the audit trail.</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="stage" data-stage>
+        <div class="stamp">01</div>
+        <div class="stage-body">
+          <div class="role">Requester</div>
+          <h3>Submit</h3>
+          <p>A requester drafts a fund request with category, amount, and justification, then submits it into the queue.</p>
+        </div>
+      </div>
+      <div class="stage" data-stage>
+        <div class="stamp">02</div>
+        <div class="stage-body">
+          <div class="role">Validator</div>
+          <h3>Validate</h3>
+          <p>The request is checked for completeness — missing fields or documentation are bounced back before it reaches a department head.</p>
+        </div>
+      </div>
+      <div class="stage" data-stage>
+        <div class="stamp">03</div>
+        <div class="stage-body">
+          <div class="role">Department head</div>
+          <h3>Approve</h3>
+          <p>The department head sets payment terms and approves or rejects the request against their budget.</p>
+        </div>
+      </div>
+      <div class="stage" data-stage>
+        <div class="stamp">04</div>
+        <div class="stage-body">
+          <div class="role">Finance officer</div>
+          <h3>Compute</h3>
+          <p>Finance applies the org's active rules — GST, TDS, policy caps — and confirms the payment schedule.</p>
+        </div>
+      </div>
+      <div class="stage" data-stage>
+        <div class="stamp">✓</div>
+        <div class="stage-body">
+          <div class="role">System</div>
+          <h3>Release</h3>
+          <p>Funds are disbursed and the full chain — request, validation, approval, deductions — is sealed into the audit log.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="tag">What's inside</span>
+      <h2>Built for how finance teams actually work.</h2>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+        </div>
+        <h3>Departments &amp; budgets</h3>
+        <p>Each department carries its own annual budget — spend is tracked against it in real time.</p>
+        <div class="dept-bars">
+          <div class="dept-row"><span class="label">ENG</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
+          <div class="dept-row"><span class="label">FIN</span><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div></div>
+          <div class="dept-row"><span class="label">MKT</span><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div></div>
+          <div class="dept-row"><span class="label">HR</span><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
+        <h3>Finance rules engine</h3>
+        <p>Tax, deduction, and policy rules applied automatically at disbursement time.</p>
+        <ul class="rule-list">
+          <li>Travel policy cap <b>₹50,000 fixed</b></li>
+          <li>GST <b>18% deduction</b></li>
+          <li>TDS on vendor payments <b>10% deduction</b></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 4 3 5-7"/></svg>
+        </div>
+        <h3>Reports &amp; analytics</h3>
+        <p>Fund flow, spend by category, and department breakdowns — monthly or yearly, exportable to Excel.</p>
+        <div class="mini-chips">
+          <span class="mini-chip">Total requested</span>
+          <span class="mini-chip">Approved</span>
+          <span class="mini-chip">Released</span>
+          <span class="mini-chip">Pending</span>
+          <span class="mini-chip">Rejected</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>Role-based access</h3>
+        <p>Five roles, each seeing only their part of the chain.</p>
+        <div class="mini-chips">
+          <span class="mini-chip">Requester</span>
+          <span class="mini-chip">Validator</span>
+          <span class="mini-chip">Department head</span>
+          <span class="mini-chip">Finance officer</span>
+          <span class="mini-chip">Super admin</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <h3>Immutable audit log</h3>
+        <p>Every submit, validate, approve, and release is written once — nothing in the chain can be edited after the fact.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12b886" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+        </div>
+        <h3>Cross-platform</h3>
+        <p>One codebase, shipped to web, Android, and iOS, with unified push notifications across each.</p>
+        <div class="mini-chips">
+          <span class="mini-chip">Web</span>
+          <span class="mini-chip">Android</span>
+          <span class="mini-chip">iOS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="tag">Under the hood</span>
+      <h2>Free-tier infrastructure, production patterns.</h2>
+      <p>Every service below runs on a free or open-source tier — no infrastructure spend to run the whole chain.</p>
+    </div>
+    <div class="stack-groups">
+      <div class="stack-row">
+        <div class="layer">Frontend</div>
+        <div class="chip-set">
+          <span class="chip">React 18</span><span class="chip">Vite</span><span class="chip">TypeScript</span><span class="chip">Capacitor</span>
+        </div>
+      </div>
+      <div class="stack-row">
+        <div class="layer">Backend</div>
+        <div class="chip-set">
+          <span class="chip">Node.js</span><span class="chip">Express</span><span class="chip">Prisma</span><span class="chip">PostgreSQL / Supabase</span>
+        </div>
+      </div>
+      <div class="stack-row">
+        <div class="layer">Realtime &amp; jobs</div>
+        <div class="chip-set">
+          <span class="chip">Redis / Upstash</span><span class="chip">BullMQ</span><span class="chip">Socket.IO</span>
+        </div>
+      </div>
+      <div class="stack-row">
+        <div class="layer">Notifications</div>
+        <div class="chip-set">
+          <span class="chip">Web Push</span><span class="chip">FCM</span><span class="chip">APNs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <h2>See the full chain in action.</h2>
+    <p>From draft to disbursement — open the live demo and follow a request through all five stages.</p>
+    <a class="btn-primary" href="#" style="box-shadow:0 10px 24px rgba(90,79,224,0.5)">Launch FlowVault →</a>
+    <div class="foot-note">FlowVault · Enterprise finance platform · built solo, free-tier infrastructure</div>
+  </div>
+</footer>
+
+<script>
+  const stages = document.querySelectorAll('[data-stage]');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.35});
+  stages.forEach(s=>io.observe(s));
+</script>
+
+</body>
+</html>

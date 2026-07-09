@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Research Ledger — Multi-Agent Research Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,900;1,500;1,600&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F1ECE1;
+    --paper-dim: #E8E1D2;
+    --ink: #211C15;
+    --ink-soft: #4B4436;
+    --rule: #C9BFA8;
+    --burgundy: #7A2E2E;
+    --sage: #55613F;
+    --gold: #A9863F;
+    --white-ish: #FAF7EF;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Serif 4', serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--burgundy); color:var(--white-ish); }
+
+  a{ color:inherit; }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    border-bottom:3px double var(--ink);
+    padding:22px 28px 16px;
+    position:relative;
+  }
+  .masthead-top{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .masthead-top span.center{ color:var(--burgundy); }
+  .masthead h1{
+    font-family:'Playfair Display', serif;
+    font-weight:900;
+    font-size:clamp(34px, 6vw, 64px);
+    margin:0;
+    text-align:center;
+    letter-spacing:-0.01em;
+  }
+  .masthead .kicker{
+    text-align:center;
+    font-family:'Source Serif 4', serif;
+    font-style:italic;
+    color:var(--ink-soft);
+    font-size:15px;
+    margin-top:6px;
+  }
+
+  /* ---------- hero / lede ---------- */
+  .lede{
+    max-width:900px;
+    margin:0 auto;
+    padding:40px 28px 10px;
+    text-align:center;
+  }
+  .lede .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--burgundy);
+    margin-bottom:14px;
+    display:inline-block;
+    border-top:1px solid var(--burgundy);
+    border-bottom:1px solid var(--burgundy);
+    padding:4px 14px;
+  }
+  .lede h2{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:clamp(24px, 3.4vw, 34px);
+    margin:0 0 18px;
+    line-height:1.25;
+  }
+  .lede p.dek{
+    font-size:16.5px;
+    color:var(--ink-soft);
+    max-width:640px;
+    margin:0 auto 26px;
+  }
+  .cta-row{
+    display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
+    margin-bottom:6px;
+  }
+  .btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:12px 22px;
+    border:1.5px solid var(--ink);
+    background:transparent;
+    cursor:pointer;
+    transition: all .18s ease;
+    text-decoration:none;
+    display:inline-block;
+  }
+  .btn.primary{ background:var(--ink); color:var(--paper); }
+  .btn.primary:hover{ background:var(--burgundy); border-color:var(--burgundy); }
+  .btn.ghost:hover{ background:var(--ink); color:var(--paper); }
+
+  hr.rule{
+    border:none; border-top:1px solid var(--rule);
+    max-width:1100px; margin:36px auto;
+  }
+  hr.rule.thick{ border-top:3px double var(--ink); }
+
+  /* ---------- section shells ---------- */
+  .section{ max-width:1100px; margin:0 auto; padding:0 28px; }
+  .section-head{
+    display:flex; align-items:baseline; gap:12px;
+    margin-bottom:22px;
+  }
+  .section-head .no{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--gold); letter-spacing:.1em;
+  }
+  .section-head h3{
+    font-family:'Playfair Display', serif;
+    font-weight:700; font-size:26px; margin:0;
+  }
+
+  /* ---------- pipeline diagram (signature element) ---------- */
+  .pipeline-wrap{
+    background:var(--white-ish);
+    border:1px solid var(--rule);
+    padding:34px 22px 26px;
+    position:relative;
+    margin-bottom:8px;
+  }
+  .pipeline-wrap::before{
+    content:"MULTI-AGENT PIPELINE";
+    position:absolute; top:-11px; left:22px;
+    background:var(--paper);
+    padding:0 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; letter-spacing:.16em;
+    color:var(--ink-soft);
+  }
+  .pipeline{
+    display:flex; align-items:center; justify-content:center;
+    gap:0; flex-wrap:wrap; row-gap:26px;
+  }
+  .node{
+    display:flex; flex-direction:column; align-items:center;
+    width:130px; text-align:center;
+  }
+  .node .stamp{
+    width:64px; height:64px; border-radius:50%;
+    border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display', serif; font-weight:700; font-size:22px;
+    background:var(--paper);
+    transform:rotate(-4deg);
+  }
+  .node:nth-child(4n+2) .stamp{ transform:rotate(3deg); border-color:var(--burgundy); color:var(--burgundy); }
+  .node:nth-child(4n+3) .stamp{ transform:rotate(-2deg); border-color:var(--sage); color:var(--sage); }
+  .node:nth-child(4n) .stamp{ transform:rotate(2deg); border-color:var(--gold); color:var(--gold); }
+  .node .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; letter-spacing:.04em;
+    margin-top:10px; font-weight:600;
+  }
+  .node .sub{ font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .arrow{
+    font-size:22px; color:var(--rule); padding:0 6px;
+    align-self:flex-start; margin-top:22px;
+  }
+
+  @media (max-width:760px){
+    .arrow{ transform:rotate(90deg); align-self:center; margin:0; }
+    .pipeline{ flex-direction:column; }
+  }
+
+  /* ---------- two column: capabilities as classified ads ---------- */
+  .classifieds{
+    columns:2; column-gap:44px;
+    margin-top:6px;
+  }
+  @media (max-width:700px){ .classifieds{ columns:1; } }
+  .ad{
+    break-inside:avoid;
+    padding-bottom:22px; margin-bottom:22px;
+    border-bottom:1px dotted var(--rule);
+  }
+  .ad .icon-line{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; color:var(--burgundy); letter-spacing:.08em;
+    text-transform:uppercase; margin-bottom:6px;
+  }
+  .ad h4{
+    font-family:'Playfair Display', serif; font-size:19px; margin:0 0 6px;
+  }
+  .ad p{ margin:0; font-size:14.5px; color:var(--ink-soft); }
+
+  /* ---------- report mockup ---------- */
+  .report-mock{
+    display:grid;
+    grid-template-columns: 220px 1fr 200px;
+    gap:0;
+    border:1px solid var(--ink);
+    background:var(--white-ish);
+    font-size:13px;
+  }
+  @media (max-width:820px){ .report-mock{ grid-template-columns:1fr; } }
+  .rm-col{ padding:22px 22px; }
+  .rm-col + .rm-col{ border-left:1px solid var(--rule); }
+  @media (max-width:820px){ .rm-col + .rm-col{ border-left:none; border-top:1px solid var(--rule); } }
+  .rm-title{
+    font-family:'IBM Plex Mono', monospace; font-size:10px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft);
+    margin-bottom:12px;
+  }
+  .rm-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:6px 0; font-size:12.5px; border-bottom:1px dashed var(--rule);
+  }
+  .rm-item:last-child{ border-bottom:none; }
+  .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:10px;
+    padding:2px 6px; border:1px solid var(--sage); color:var(--sage);
+  }
+  .tag.progress{ border-color:var(--gold); color:var(--gold); }
+  .rm-center{ padding:26px 30px; }
+  .rm-center h5{ font-family:'Playfair Display', serif; font-size:21px; margin:0 0 8px; }
+  .rm-center .meta{ font-size:11px; color:var(--ink-soft); font-style:italic; margin-bottom:24px; }
+  .rm-center h6{
+    font-family:'IBM Plex Mono', monospace; font-size:11px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--burgundy);
+    margin:26px 0 10px;
+  }
+  .rm-center h6:first-of-type{ margin-top:0; }
+  .rm-center p{ font-size:14px; line-height:1.75; color:var(--ink-soft); margin:0 0 10px; }
+  .cite{ color:var(--sage); font-family:'IBM Plex Mono', monospace; font-size:11px; }
+  .stat-block{ text-align:center; padding:10px 0; }
+  .stat-block .num{ font-family:'Playfair Display', serif; font-weight:900; font-size:30px; color:var(--burgundy); line-height:1; }
+  .stat-block .lab{ font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); }
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px 0; margin-bottom:16px; }
+  .marginalia-item{ font-size:11.5px; margin-bottom:12px; }
+  .marginalia-item b{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--ink); display:block; margin-bottom:2px; }
+  .marginalia-item span{ color:var(--ink-soft); }
+
+  /* ---------- stack (tech masthead footer) ---------- */
+  .stack-strip{
+    display:flex; flex-wrap:wrap; gap:10px 22px; justify-content:center;
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:.05em;
+    color:var(--ink-soft); text-transform:uppercase;
+  }
+  .stack-strip span::before{ content:"·"; margin-right:8px; color:var(--gold); }
+  .stack-strip span:first-child::before{ content:""; margin-right:0; }
+
+  /* ---------- footer / masthead close ---------- */
+  .colophon{
+    border-top:3px double var(--ink);
+    margin-top:50px;
+    padding:26px 28px 40px;
+    text-align:center;
+  }
+  .colophon p{ font-size:13px; color:var(--ink-soft); max-width:560px; margin:0 auto 18px; }
+  .colophon .final-cta{ margin-top:6px; }
+
+  .pull-quote{
+    font-family:'Playfair Display', serif;
+    font-style:italic;
+    font-size:clamp(20px,2.6vw,28px);
+    text-align:center;
+    max-width:760px;
+    margin:44px auto;
+    padding:0 20px;
+    color:var(--ink);
+    position:relative;
+  }
+  .pull-quote::before, .pull-quote::after{ color:var(--burgundy); font-family:'Playfair Display'; font-size:1.4em; }
+  .pull-quote::before{ content:"“"; }
+  .pull-quote::after{ content:"”"; }
+  .pull-quote footer{
+    font-family:'IBM Plex Mono', monospace; font-style:normal; font-size:11px;
+    color:var(--ink-soft); margin-top:10px; letter-spacing:.05em;
+  }
+
+  section{ padding-top:52px; }
+</style>
+</head>
+<body>
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="masthead-top">
+      <span>Vol. I · No. 1</span>
+      <span class="center">Est. 2026 — Planned, Searched, Verified, Written</span>
+      <span>Multi-Agent Research Assistant</span>
+    </div>
+    <h1>The Research Ledger</h1>
+    <div class="kicker">Research isn't a single answer. It's a committee working the case, on the record.</div>
+  </div>
+
+  <!-- LEDE / HERO -->
+  <div class="lede">
+    <span class="eyebrow">Front Page</span>
+    <h2>A newsroom of specialized agents — planning, retrieving, verifying, and writing — turns any question into a citation-backed report.</h2>
+    <p class="dek">Ask a question. A Planner breaks it into sub-inquiries, a Retriever gathers evidence from your knowledge base and the open web, two Verifiers cross-check every claim against its source, and a Synthesizer files the final report — every sentence traceable back to where it came from.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="#try">Put a question to the committee</a>
+      <a class="btn ghost" href="#pipeline">See how it works</a>
+    </div>
+  </div>
+
+  <blockquote class="pull-quote">
+    98% of claims verified against source, in under a minute, across twenty-one citations.
+    <footer>— FROM AN ACTUAL RUN: “DOES FASTING AFFECT INSULIN SENSITIVITY?”</footer>
+  </blockquote>
+
+  <hr class="rule thick">
+
+  <!-- PIPELINE -->
+  <section id="pipeline" class="section">
+    <div class="section-head">
+      <span class="no">§ 01</span>
+      <h3>How the Committee Works</h3>
+    </div>
+    <div class="pipeline-wrap">
+      <div class="pipeline">
+        <div class="node">
+          <div class="stamp">?</div>
+          <div class="label">Question</div>
+          <div class="sub">what you asked</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="stamp">P</div>
+          <div class="label">Planner</div>
+          <div class="sub">decomposes into sub-queries</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="stamp">R</div>
+          <div class="label">Retriever</div>
+          <div class="sub">searches web + knowledge base</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="stamp">V</div>
+          <div class="label">Verifier</div>
+          <div class="sub">checks claim against source</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="stamp">W</div>
+          <div class="label">Synthesizer</div>
+          <div class="sub">files the report</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- CAPABILITIES AS CLASSIFIEDS -->
+  <section class="section">
+    <div class="section-head">
+      <span class="no">§ 02</span>
+      <h3>Notices &amp; Capabilities</h3>
+    </div>
+    <div class="classifieds">
+      <div class="ad">
+        <div class="icon-line">Planning</div>
+        <h4>One question becomes several</h4>
+        <p>The Planner reads your question and stakes out the sub-inquiries a real researcher would chase first — no single-shot guesswork, no missed angles.</p>
+      </div>
+      <div class="ad">
+        <div class="icon-line">Retrieval-Augmented Generation</div>
+        <h4>Evidence before opinion</h4>
+        <p>Every answer is grounded in retrieved sources — internal documents, a knowledge graph, and the open web — before a single sentence is written.</p>
+      </div>
+      <div class="ad">
+        <div class="icon-line">Citation Verification</div>
+        <h4>Every claim, checked against its source</h4>
+        <p>A dedicated Verifier agent re-reads each claim against the document it came from and flags anything that doesn't hold up — nothing ships unchecked.</p>
+      </div>
+      <div class="ad">
+        <div class="icon-line">Hybrid LLM Support</div>
+        <h4>Cloud or local, your call</h4>
+        <p>Run the committee on cloud LLMs for scale, or on Ollama locally for privacy and cost control — the pipeline doesn't care which model does the reading.</p>
+      </div>
+      <div class="ad">
+        <div class="icon-line">Distributed Workflows</div>
+        <h4>Built to not fall over</h4>
+        <p>Celery workers and Redis queues run each agent's task independently, so a slow search or a stalled verifier never stalls the whole report.</p>
+      </div>
+      <div class="ad">
+        <div class="icon-line">Structured Reports</div>
+        <h4>Research, ready to read</h4>
+        <p>Findings land as a proper report — introduction, key findings, evidence, conclusion — not a wall of chat bubbles you have to reassemble yourself.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- REPORT MOCK -->
+  <section class="section">
+    <div class="section-head">
+      <span class="no">§ 03</span>
+      <h3>Filed This Week: A Sample Report</h3>
+    </div>
+    <div class="report-mock">
+      <div class="rm-col">
+        <div class="rm-title">Research History</div>
+        <div class="rm-item">AI Safety <span class="tag">done</span></div>
+        <div class="rm-item">Quantum Computing <span class="tag">done</span></div>
+        <div class="rm-item">Protein Folding <span class="tag">done</span></div>
+        <div class="rm-item">Climate Change <span class="tag">done</span></div>
+        <div class="rm-item">Insulin Sensitivity <span class="tag">done</span></div>
+        <div class="rm-item">Does walking affect BP? <span class="tag">done</span></div>
+        <div class="rm-item">Is this a good movie? <span class="tag progress">in progress</span></div>
+      </div>
+      <div class="rm-center">
+        <h5>Fasting and Insulin Sensitivity: An Analysis</h5>
+        <div class="meta">Inquiry filed 5 July 2026 · Status: Completed</div>
+        <h6>Introduction</h6>
+        <p>Fasting has been studied for its potential effects on several health conditions, including insulin sensitivity and diabetes management.</p>
+        <h6>Key Findings &amp; Evidence</h6>
+        <p>Multiple sources <span class="cite">[1] [3] [7] [12] [18]</span> confirm that fasting can enhance insulin sensitivity, directly or indirectly, alongside related benefits such as weight loss and improved glycemic control.</p>
+        <h6>Conclusion</h6>
+        <p>The weight of verified evidence supports a positive relationship — with caveats the report lays out source by source.</p>
+      </div>
+      <div class="rm-col">
+        <div class="rm-title">Agent Status</div>
+        <div class="rm-item">Planner <span class="tag">completed</span></div>
+        <div class="rm-item">Retriever <span class="tag">completed</span></div>
+        <div class="rm-item">Verifier <span class="tag">completed</span></div>
+        <div class="rm-item">Synthesizer <span class="tag">completed</span></div>
+        <div class="stat-grid">
+          <div class="stat-block"><div class="num">48s</div><div class="lab">Research Time</div></div>
+          <div class="stat-block"><div class="num">21</div><div class="lab">Sources</div></div>
+          <div class="stat-block"><div class="num">5</div><div class="lab">Agents</div></div>
+          <div class="stat-block"><div class="num">98%</div><div class="lab">Accuracy</div></div>
+        </div>
+        <div class="rm-title">Marginalia</div>
+        <div class="marginalia-item"><b>01 · Planner</b><span>decomposed into 4 sub-queries on fasting, insulin production, and glucose response.</span></div>
+        <div class="marginalia-item"><b>02 · Searcher</b><span>ran 4 queries, returned 24 results — 8 internal docs, 4 graph, 12 web.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- STACK -->
+  <section class="section" id="try">
+    <div class="section-head">
+      <span class="no">§ 04</span>
+      <h3>Printed With</h3>
+    </div>
+    <div class="stack-strip">
+      <span>Next.js</span><span>FastAPI</span><span>Python</span><span>PostgreSQL</span><span>Redis</span><span>Celery</span><span>Docker</span><span>Ollama</span><span>RAG</span>
+    </div>
+  </section>
+
+  <!-- COLOPHON / FINAL CTA -->
+  <div class="colophon">
+    <p>Built for trustworthy AI — every research question gets a paper trail, not just a paragraph. Designed for collaborative reasoning between agents that check each other's work, so you don't have to.</p>
+    <div class="final-cta">
+      <a class="btn primary" href="#">Read the source →</a>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Annotate — Review Interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:            #0A0F12;
+    --panel:         #0F171A;
+    --panel-2:       #121B1F;
+    --line:          rgba(127,217,196,0.10);
+    --line-strong:   rgba(127,217,196,0.22);
+    --ink:           #E7F2EF;
+    --ink-dim:       #7C9490;
+    --ink-dimmer:    #4E625F;
+    --mint:          #7FD9C4;
+    --mint-dim:      rgba(127,217,196,0.14);
+
+    --c-image:  #52D67A;
+    --c-audio:  #57A6F2;
+    --c-text:   #B58BF0;
+    --c-video:  #F2B347;
+    --c-danger: #F0685E;
+
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  .wrap{max-width:900px;margin:0 auto;padding:0 28px;}
+  a{color:inherit;}
+
+  /* ---------- background texture ---------- */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(127,217,196,0.05), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(87,166,242,0.045), transparent 45%);
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--mono); font-weight:600; font-size:13px;
+    letter-spacing:0.12em; color:var(--mint);
+    text-transform:uppercase;
+  }
+  .brand .diamond{
+    width:8px;height:8px; background:var(--mint); transform:rotate(45deg);
+    box-shadow:0 0 12px rgba(127,217,196,0.6);
+  }
+  .brand-sub{
+    font-family:var(--mono); font-size:11px; color:var(--ink-dimmer);
+    letter-spacing:0.06em; margin-left:2px;
+  }
+  .status-pill{
+    display:flex; align-items:center; gap:7px;
+    font-family:var(--mono); font-size:11px; color:var(--ink-dim);
+    letter-spacing:0.04em;
+  }
+  .status-pill .dot{
+    width:6px;height:6px;border-radius:50%; background:var(--c-image);
+    box-shadow:0 0 8px var(--c-image);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative; z-index:1;
+    padding:68px 0 40px;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.18em;
+    color:var(--ink-dimmer); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:'';width:22px;height:1px;background:var(--line-strong);}
+  h1{
+    font-size:clamp(30px, 5vw, 46px);
+    font-weight:800; letter-spacing:-0.02em; line-height:1.08;
+    max-width:14ch;
+    background:linear-gradient(180deg, var(--ink) 0%, var(--ink) 60%, var(--mint) 140%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{
+    margin-top:18px; max-width:52ch;
+    font-size:16px; color:var(--ink-dim); line-height:1.65;
+  }
+  .lede b{color:var(--ink); font-weight:600;}
+
+  .cta-row{display:flex; gap:12px; margin-top:30px; flex-wrap:wrap;}
+  .btn{
+    font-family:var(--mono); font-size:12.5px; letter-spacing:0.03em;
+    padding:11px 18px; border-radius:6px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line-strong); transition:all .18s ease;
+    text-decoration:none;
+  }
+  .btn-primary{
+    background:var(--mint); color:#08110F; border-color:var(--mint); font-weight:600;
+  }
+  .btn-primary:hover{box-shadow:0 0 22px rgba(127,217,196,0.35); transform:translateY(-1px);}
+  .btn-ghost{background:var(--panel); color:var(--ink-dim);}
+  .btn-ghost:hover{color:var(--ink); border-color:var(--mint-dim); background:var(--panel-2);}
+
+  /* ---------- dashboard mock (signature element) ---------- */
+  .console{
+    position:relative; z-index:1;
+    margin-top:52px;
+    border:1px solid var(--line-strong);
+    border-radius:12px;
+    background:var(--panel);
+    box-shadow:0 30px 80px -30px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.4);
+    overflow:hidden;
+  }
+  .console-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    font-family:var(--mono); font-size:11px; color:var(--ink-dimmer);
+  }
+  .console-dots{display:flex; gap:6px;}
+  .console-dots span{width:8px;height:8px;border-radius:50%;background:var(--line-strong);}
+  .console-body{padding:20px;}
+  .stat-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px;
+  }
+  .stat-card{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+    padding:14px 14px 12px;
+  }
+  .stat-label{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:0.1em;
+    color:var(--ink-dimmer); text-transform:uppercase; display:flex; align-items:center; gap:6px; margin-bottom:10px;
+  }
+  .stat-label .ring{
+    width:9px;height:9px;border-radius:50%; border:2px solid currentColor; flex-shrink:0;
+  }
+  .stat-value{font-family:var(--mono); font-size:22px; font-weight:600; color:var(--ink);}
+  .stat-foot{font-family:var(--mono); font-size:10px; color:var(--ink-dimmer); margin-top:4px;}
+
+  .panel-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .mini-panel{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:14px;
+  }
+  .mini-panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:10px;
+  }
+  .mini-panel-head span.tag{
+    font-family:var(--mono); font-size:9px; color:var(--mint); border:1px solid var(--mint-dim);
+    padding:2px 6px; border-radius:4px; letter-spacing:0.04em;
+  }
+  .bar-track{height:6px; border-radius:4px; background:rgba(127,217,196,0.08); overflow:hidden; margin-top:10px;}
+  .bar-fill{height:100%; background:linear-gradient(90deg, var(--mint), var(--c-audio)); width:0%; border-radius:4px; animation:fillbar 3.2s ease-in-out infinite;}
+  @keyframes fillbar{0%{width:6%;}45%{width:78%;}55%{width:78%;}100%{width:6%;}}
+  .health-line{
+    font-family:var(--mono); font-size:11px; color:var(--ink-dim);
+    display:flex; align-items:center; gap:8px;
+  }
+  .health-line .dot{width:6px;height:6px;border-radius:50%;background:var(--c-image); box-shadow:0 0 6px var(--c-image);}
+
+  @media (max-width:640px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .panel-row{grid-template-columns:1fr;}
+  }
+
+  /* ---------- section shared ---------- */
+  section{position:relative; z-index:1; padding:56px 0;}
+  section.divider{border-top:1px solid var(--line);}
+  .section-head{margin-bottom:30px;}
+  .section-num{
+    font-family:var(--mono); font-size:11px; color:var(--mint); letter-spacing:0.1em; margin-bottom:8px;
+  }
+  h2{font-size:23px; font-weight:700; letter-spacing:-0.01em;}
+  .section-sub{color:var(--ink-dim); font-size:14.5px; margin-top:8px; max-width:56ch;}
+
+  /* ---------- pipeline ---------- */
+  .pipeline{
+    display:flex; flex-direction:column; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+  }
+  .pipe-step{
+    display:flex; gap:16px; padding:18px 20px; border-bottom:1px solid var(--line);
+    background:var(--panel);
+  }
+  .pipe-step:last-child{border-bottom:none;}
+  .pipe-step:nth-child(even){background:var(--panel-2);}
+  .pipe-index{
+    font-family:var(--mono); font-size:12px; color:var(--ink-dimmer); width:26px; flex-shrink:0; padding-top:2px;
+  }
+  .pipe-body h3{font-size:14.5px; font-weight:600; margin-bottom:4px;}
+  .pipe-body p{font-size:13.5px; color:var(--ink-dim); max-width:60ch;}
+
+  /* ---------- modalities ---------- */
+  .mod-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  }
+  .mod-card{
+    border:1px solid var(--line); border-radius:10px; padding:18px 16px;
+    background:var(--panel); transition:border-color .18s ease, transform .18s ease;
+  }
+  .mod-card:hover{transform:translateY(-3px);}
+  .mod-dot{width:10px;height:10px;border-radius:50%; margin-bottom:14px; box-shadow:0 0 10px currentColor;}
+  .mod-card h3{font-size:14px; font-weight:600; margin-bottom:6px;}
+  .mod-card p{font-size:12.5px; color:var(--ink-dim); line-height:1.55;}
+  .mod-count{font-family:var(--mono); font-size:10.5px; color:var(--ink-dimmer); margin-top:12px; letter-spacing:0.03em;}
+
+  .c-image{color:var(--c-image);} .b-image{border-color:rgba(82,214,122,0.35) !important;}
+  .c-audio{color:var(--c-audio);} .b-audio{border-color:rgba(87,166,242,0.35) !important;}
+  .c-text{color:var(--c-text);}   .b-text{border-color:rgba(181,139,240,0.35) !important;}
+  .c-video{color:var(--c-video);} .b-video{border-color:rgba(242,179,71,0.35) !important;}
+
+  @media (max-width:760px){ .mod-grid{grid-template-columns:repeat(2,1fr);} }
+
+  /* ---------- infra ---------- */
+  .infra-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .infra-card{
+    border:1px solid var(--line); border-radius:10px; padding:16px 18px; background:var(--panel);
+  }
+  .infra-title{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.06em; color:var(--ink-dim);
+    text-transform:uppercase; display:flex; align-items:center; gap:8px; margin-bottom:6px;
+  }
+  .infra-title .dot{width:6px;height:6px;border-radius:50%; background:var(--c-danger);}
+  .infra-title .dot.up{background:var(--c-image); box-shadow:0 0 6px var(--c-image);}
+  .infra-desc{font-size:13px; color:var(--ink-dimmer); line-height:1.5;}
+  @media (max-width:640px){ .infra-grid{grid-template-columns:1fr;} }
+
+  /* ---------- stack ---------- */
+  .stack-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    font-family:var(--mono); font-size:11.5px; color:var(--ink-dim);
+    border:1px solid var(--line-strong); padding:7px 12px; border-radius:20px;
+    background:var(--panel);
+  }
+
+  /* ---------- footer cta ---------- */
+  .footer-cta{
+    text-align:left; border:1px solid var(--line-strong); border-radius:12px;
+    padding:32px 28px; background:linear-gradient(160deg, var(--panel), var(--panel-2));
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  }
+  .footer-cta h3{font-size:18px; font-weight:700; margin-bottom:6px;}
+  .footer-cta p{font-size:13.5px; color:var(--ink-dim); max-width:44ch;}
+  .foot-note{
+    font-family:var(--mono); font-size:11px; color:var(--ink-dimmer); text-align:center; padding:26px 0 40px;
+    letter-spacing:0.03em;
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="topbar">
+  <div class="brand"><span class="diamond"></span>AI ANNOTATE<span class="brand-sub">/ review interface</span></div>
+  <div class="status-pill"><span class="dot"></span>SYSTEM ONLINE</div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">Human-in-the-loop QA for AI pipelines</div>
+    <h1>Every AI annotation, held to a standard.</h1>
+    <p class="lede">
+      AI models generate annotations by the million — labels, transcripts, bounding boxes, tags.
+      Most are right. <b>Which ones can you actually trust?</b> AI Annotate samples model output
+      across image, audio, text, and video, routes it to human reviewers, and turns raw judgment
+      calls into a measurable confidence score.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#pipeline">See how it works</a>
+      <a class="btn btn-ghost" href="#stack">View the stack</a>
+    </div>
+
+    <!-- signature dashboard recreation -->
+    <div class="console">
+      <div class="console-bar">
+        <span>overview.tsx</span>
+        <div class="console-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="console-body">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label"><span class="ring" style="color:var(--ink-dimmer)"></span>TOTAL</div>
+            <div class="stat-value" id="cnt-total">0</div>
+            <div class="stat-foot"><span id="cnt-success">0</span> reviewed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" style="color:var(--c-image)"><span class="ring"></span>IMAGE</div>
+            <div class="stat-value" id="cnt-image">0</div>
+            <div class="stat-foot">annotated</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" style="color:var(--c-audio)"><span class="ring"></span>AUDIO</div>
+            <div class="stat-value" id="cnt-audio">0</div>
+            <div class="stat-foot">transcribed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" style="color:var(--c-text)"><span class="ring"></span>TEXT</div>
+            <div class="stat-value" id="cnt-text">0</div>
+            <div class="stat-foot">analyzed</div>
+          </div>
+        </div>
+        <div class="panel-row">
+          <div class="mini-panel">
+            <div class="mini-panel-head">Sampling Engine <span class="tag">RUNNING</span></div>
+            <div class="health-line"><span class="dot"></span>Selecting review subset…</div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+          </div>
+          <div class="mini-panel">
+            <div class="mini-panel-head">Platform Health <span class="tag">OK</span></div>
+            <div class="health-line"><span class="dot"></span>MinIO connected</div>
+            <div class="health-line" style="margin-top:6px;"><span class="dot"></span>Redis queue live</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="divider" id="pipeline">
+    <div class="section-head">
+      <div class="section-num">01 — PIPELINE</div>
+      <h2>From raw upload to trusted output</h2>
+      <p class="section-sub">A fixed sequence, purpose-built so a reviewer never has to guess what stage a file is in or what's expected of them next.</p>
+    </div>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-index">01</div>
+        <div class="pipe-body">
+          <h3>Upload &amp; ingest</h3>
+          <p>Files land in object storage the moment they're dropped in — image, audio, text, or video — and are fingerprinted for dedup before anything else touches them.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-index">02</div>
+        <div class="pipe-body">
+          <h3>Model annotation</h3>
+          <p>Each file runs through its modality's annotation model. Output is stored alongside a confidence score, not treated as ground truth.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-index">03</div>
+        <div class="pipe-body">
+          <h3>Sampling engine</h3>
+          <p>Rather than reviewing everything, the sampling engine pulls a statistically representative subset — weighted toward low-confidence and edge-case output — into the review queue.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-index">04</div>
+        <div class="pipe-body">
+          <h3>Human review</h3>
+          <p>Reviewers work the queue through a modality-specific interface: correct, confirm, or reject, one item at a time, with full context alongside the model's original call.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-index">05</div>
+        <div class="pipe-body">
+          <h3>Progress &amp; export</h3>
+          <p>Reviewed batches roll up into agreement rates and per-modality accuracy, ready to export or feed straight back into the next training run.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="divider" id="modalities">
+    <div class="section-head">
+      <div class="section-num">02 — MODALITIES</div>
+      <h2>One review interface, four kinds of judgment</h2>
+      <p class="section-sub">Image, audio, text, and video each demand a different reviewing motion — so each gets its own workspace, not a generic form.</p>
+    </div>
+    <div class="mod-grid">
+      <div class="mod-card b-image" style="border-width:1px;">
+        <div class="mod-dot c-image" style="background:currentColor;"></div>
+        <h3>Image</h3>
+        <p>Bounding boxes, segmentation, and tags overlaid directly on the frame for a fast accept / correct / reject pass.</p>
+        <div class="mod-count c-image">0 ANNOTATED</div>
+      </div>
+      <div class="mod-card b-audio" style="border-width:1px;">
+        <div class="mod-dot c-audio" style="background:currentColor;"></div>
+        <h3>Audio</h3>
+        <p>Waveform-synced transcripts with word-level timing, so a reviewer can catch a misheard word without relistening to the whole clip.</p>
+        <div class="mod-count c-audio">0 TRANSCRIBED</div>
+      </div>
+      <div class="mod-card b-text" style="border-width:1px;">
+        <div class="mod-dot c-text" style="background:currentColor;"></div>
+        <h3>Text</h3>
+        <p>Classification, sentiment, and entity labels reviewed inline against the source passage, side by side.</p>
+        <div class="mod-count c-text">0 ANALYZED</div>
+      </div>
+      <div class="mod-card b-video" style="border-width:1px;">
+        <div class="mod-dot c-video" style="background:currentColor;"></div>
+        <h3>Video</h3>
+        <p>Frame-by-frame scrubbing over tracked objects and event annotations, built for reviewing motion, not just moments.</p>
+        <div class="mod-count c-video">0 REVIEWED</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="divider" id="infra">
+    <div class="section-head">
+      <div class="section-num">03 — INFRASTRUCTURE</div>
+      <h2>Built to stay honest about its own state</h2>
+      <p class="section-sub">The platform reports on itself the same way it reports on the data — no silent failures, no annotation queue nobody's watching.</p>
+    </div>
+    <div class="infra-grid">
+      <div class="infra-card">
+        <div class="infra-title"><span class="dot up"></span>Platform Health</div>
+        <div class="infra-desc">A live check across every dependent service, refreshed on demand — so a stalled reviewer knows immediately whether it's their queue or the platform.</div>
+      </div>
+      <div class="infra-card">
+        <div class="infra-title"><span class="dot up"></span>Sampling Engine</div>
+        <div class="infra-desc">Runs on a schedule or on demand, drawing new review batches with weighting rules that stay tunable per modality.</div>
+      </div>
+      <div class="infra-card">
+        <div class="infra-title"><span class="dot up"></span>MinIO</div>
+        <div class="infra-desc">S3-compatible object storage holding every raw file and annotation artifact, self-hosted so nothing leaves the review environment.</div>
+      </div>
+      <div class="infra-card">
+        <div class="infra-title"><span class="dot up"></span>Redis</div>
+        <div class="infra-desc">Backs the review queue and the auto-refresh cycle, keeping the dashboard's numbers current without polling the database directly.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="divider" id="stack">
+    <div class="section-head">
+      <div class="section-num">04 — STACK</div>
+      <h2>What it's built with</h2>
+    </div>
+    <div class="stack-row">
+      <span class="chip">React</span>
+      <span class="chip">FastAPI</span>
+      <span class="chip">Python</span>
+      <span class="chip">Redis</span>
+      <span class="chip">MinIO</span>
+      <span class="chip">PostgreSQL</span>
+      <span class="chip">Docker</span>
+      <span class="chip">WebSockets</span>
+    </div>
+  </section>
+
+  <section class="divider">
+    <div class="footer-cta">
+      <div>
+        <h3>Curious how the queue actually feels?</h3>
+        <p>The review interface is live — upload a file and watch it move through sampling to your review queue in real time.</p>
+      </div>
+      <div class="cta-row" style="margin-top:0;">
+        <a class="btn btn-primary" href="#">Try the demo</a>
+        <a class="btn btn-ghost" href="#">View source</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot-note">AI ANNOTATE — REVIEW INTERFACE v1.0 — BUILT BY MICK</div>
+
+</main>
+
+<script>
+  // Animate the hero counters + status dots to feel alive, like the real dashboard.
+  function animateCount(id, target, duration){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const start = performance.now();
+    function tick(now){
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target).toLocaleString();
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const targets = { 'cnt-total': 18420, 'cnt-success': 17930, 'cnt-image': 8214, 'cnt-audio': 4102, 'cnt-text': 6104 };
+  const consoleEl = document.querySelector('.console');
+  let started = false;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting && !started){
+        started = true;
+        Object.entries(targets).forEach(([id, val]) => animateCount(id, val, 1400 + Math.random()*400));
+      }
+    });
+  }, {threshold: 0.3});
+  if(consoleEl) io.observe(consoleEl);
+</script>
+
+</body>
+</html>
