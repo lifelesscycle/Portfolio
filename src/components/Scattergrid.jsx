@@ -1,15 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-// Slot placement. `left`/`width` are ratios of the row's measured
-// WIDTH, same as before. Slots 0 and 2 are the top anchors and keep a
-// small topRatio (also width-based, so they scale correctly). Slot 1
-// is the one that cascades below both anchors — its `top` is NOT a
-// guessed ratio. It's computed at render time from the *actual*
-// measured bottom edges of slots 0 and 2 (see getSlotTop below), plus
-// an explicit gap. A guessed ratio was the bug: it happened to clear
-// the anchors at one container width and collide with them at
-// another, since ratio×width doesn't automatically track two other
-// independently-sized tiles' bottoms.
+
 const SLOTS = [
   { left: 2,  topRatio: 0.02, width: 37, shape: "square" },
   { left: 3, width: 55, shape: "wide" }, // top computed dynamically
