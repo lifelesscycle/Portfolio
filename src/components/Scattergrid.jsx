@@ -7,8 +7,6 @@ const SLOTS = [
   { left: 60, topRatio: 0.05, width: 32, shape: "tall" },
 ];
 
-// Fixed chrome clearance (px) for TiltCard's floating title plate
-// above the card and its footer row below. Stays constant — it's
 // fixed-size text/UI, not something that scales with card width.
 const CHROME_CLEARANCE = 5;
 // Small breathing room between the anchor row and the cascading tile

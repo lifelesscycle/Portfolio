@@ -1,6 +1,6 @@
 import { useState } from "react";
 import TiltCard from "./TiltCard";
-import ScatterGrid from "./ScatterGrid";
+import ScatterGrid from "./Scattergrid";
 import { CATEGORIES, WORK_PROJECTS } from "../data/content";
 import { ScrollDecryptText, Barcode } from "./DecryptFX";
 
