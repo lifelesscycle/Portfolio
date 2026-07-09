@@ -1,4 +1,4 @@
-# Portfolio — Mick
+# Portfolio — Aarya
 
 A single-page developer portfolio: hero, Work (staggered project grid), Lab
 (experiments list), About (code-as-bio), and Contact — built with **React +
