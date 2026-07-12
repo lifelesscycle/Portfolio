@@ -16,6 +16,23 @@
     background: #07070a;
     color: #e4eeec;
     position: relative;
+    /* Backs up the JS-level selectstart/copy blocking (see
+       useDisableInspect.js). CSS is the part that actually stops
+       selection from being visually possible in the first place, rather
+       than just reacting after a selection event already fired. */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none; /* iOS long-press copy/save menu */
+  }
+  /* Form fields are the one place selection has to keep working — the
+     visitor is typing their own name/email/message and needs to be able
+     to select and edit it normally. */
+  input,
+  textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
   }
   /* Fine film-grain overlay, fixed to the viewport above everything.
      This one change does more for a "deep, expensive" feel than any
@@ -90,7 +107,7 @@
     font-weight: 700;
     font-size: clamp(60px, 11vw, 130px);
     line-height: 1;
-    color: rgba(94, 156, 137, 0.055);
+    color: rgba(140, 176, 165, 0.16);
     letter-spacing: -2px;
     user-select: none;
     white-space: nowrap;
@@ -177,28 +194,149 @@
   }
 
   /* -------------------------------------------------- */
-  /* Ambient light bars — Work/Lab/About backdrop        */
+  /* Aurora glow — Work/Lab/About backdrop                */
+  /* Two slow, independently-timed soft blobs. Only        */
+  /* transform ever animates, so both stay compositor-only */
+  /* no matter how large the blur radius is.                */
   /* -------------------------------------------------- */
-  @keyframes barFlow {
-    from {
-      background-position-y: 0px;
-    }
-    to {
-      background-position-y: 140px;
-    }
+  /* Base: shared positioning behavior only. Size, color, alpha and blur
+     are set per halo/core class below since the two need very different
+     values (a soft wide halo vs. a tight bright core) to actually clear
+     the vignette and read as visible against a near-black background —
+     see the TUNING NOTE in MeshBackground.jsx for how these numbers were
+     checked. Position is expressed as a center point (left/top) plus a
+     permanent translate(-50%,-50%) baked into the drift keyframes below,
+     so the same element can be centered AND animate a drift offset
+     without the two transforms stomping each other. */
+  .aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    will-change: transform;
   }
-  @keyframes barSway {
+  /* A — dominant glow, anchored near the top-right corner (not floating
+     mid-frame — every reference this was built from emanates FROM an
+     edge, never sits free-standing on top of content). Core blur is
+     large relative to core size so it melts into the halo as one
+     continuous glow instead of reading as a bright disc inside a soft
+     ring. */
+  .aurora-blob--a-halo,
+  .aurora-blob--a-core {
+    left: 94%;
+    top: 2%;
+    animation: auroraDriftA 46s ease-in-out infinite;
+  }
+  .aurora-blob--a-halo {
+    width: clamp(380px, 62vw, 900px);
+    height: clamp(380px, 62vw, 900px);
+    background: radial-gradient(circle, rgba(96, 108, 150, 0.3), rgba(96, 108, 150, 0) 70%);
+    filter: blur(100px);
+  }
+  .aurora-blob--a-core {
+    width: clamp(200px, 28vw, 440px);
+    height: clamp(200px, 28vw, 440px);
+    background: radial-gradient(circle, rgba(96, 108, 150, 0.4), rgba(96, 108, 150, 0) 70%);
+    filter: blur(46px);
+  }
+  /* B — subtle secondary accent, bottom-left corner. Deliberately
+     quieter than A (lower alpha throughout) so the two don't compete —
+     one glow leads, one just adds depth. */
+  .aurora-blob--b-halo,
+  .aurora-blob--b-core {
+    left: 4%;
+    top: 96%;
+    animation: auroraDriftB 58s ease-in-out infinite;
+  }
+  .aurora-blob--b-halo {
+    width: clamp(340px, 55vw, 840px);
+    height: clamp(340px, 55vw, 840px);
+    background: radial-gradient(circle, rgba(108, 88, 132, 0.18), rgba(108, 88, 132, 0) 70%);
+    filter: blur(100px);
+  }
+  .aurora-blob--b-core {
+    width: clamp(180px, 24vw, 400px);
+    height: clamp(180px, 24vw, 400px);
+    background: radial-gradient(circle, rgba(108, 88, 132, 0.27), rgba(108, 88, 132, 0) 70%);
+    filter: blur(46px);
+  }
+  /* Drift keyframes now carry the permanent centering transform
+     (translate(-50%,-50%)) alongside the small wander offset — without
+     it, the animation would reset the element to its top-left corner on
+     every cycle instead of drifting around its centered position. */
+  @keyframes auroraDriftA {
     0%, 100% {
-      transform: translateX(-10px);
+      transform: translate(-50%, -50%) scale(1);
     }
     50% {
-      transform: translateX(10px);
+      transform: translate(calc(-50% - 34px), calc(-50% + 26px)) scale(1.08);
     }
   }
-  .light-bar-flow {
-    animation-name: barFlow, barSway;
-    animation-timing-function: linear, ease-in-out;
-    animation-iteration-count: infinite, infinite;
-    will-change: background-position, transform;
+  @keyframes auroraDriftB {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(calc(-50% + 28px), calc(-50% - 22px)) scale(1.05);
+    }
+  }
+
+  /* -------------------------------------------------- */
+  /* Signal field — stars + constellation lines           */
+  /* Work/Lab/About/Contact structural layer. Each star's  */
+  /* peak brightness rides in on --peak so every instance   */
+  /* can share one keyframe instead of needing its own.     */
+  /* -------------------------------------------------- */
+  .signal-star {
+    animation-name: starTwinkle;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  .signal-star-halo {
+    animation-name: starTwinkle;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  @keyframes starTwinkle {
+    0%, 100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: var(--peak);
+    }
+  }
+  .signal-line {
+    animation-name: lineBreathe;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-duration: 8s;
+  }
+  @keyframes lineBreathe {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* -------------------------------------------------- */
+  /* Vignette — pulls every section's edges toward black   */
+  /* so glow reads as light in a dark room, not a gray      */
+  /* wash filling the screen. Always on, never crossfaded.  */
+  /* -------------------------------------------------- */
+  .vignette {
+    background: radial-gradient(
+      ellipse 85% 75% at 50% 38%,
+      transparent 50%,
+      rgba(7, 7, 10, 0.5) 100%
+    );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aurora-blob,
+    .signal-star,
+    .signal-star-halo,
+    .signal-line {
+      animation: none !important;
+    }
   }
 }

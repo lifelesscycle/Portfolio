@@ -1,136 +1,53 @@
 /* Per-section backdrop, crossfaded as the visitor scrolls between
-   sections. "start" (the hero/landing section) keeps its own quiet
-   wash with no texture, and "contact" keeps its own centered purple
-   glow. Work, Lab and About share one consistent look — Lab's
-   blue-violet glow (top-right placement) plus its dot-grid texture —
-   so that stretch of the page reads as one continuous "room."
-   Layers are stacked and only ever animate opacity, since browsers
-   can't interpolate between two different gradients/patterns. */
+   sections.
+
+   UPDATE — "Signal Field" (the seeded starfield/constellation SVG that
+   used to back work/lab/about/contact) has been replaced by
+   EffectBackground: one real WebGL effect per section (Galaxy /
+   LightRays / LightPillar / LaserFlow), instead of one shared field.
+   The landing section ("start") is untouched — same TriangleMesh, same
+   seed, same fills as before.
+
+   Two structural rules carry over unchanged from the original file:
+   layers are stacked and only ever animate opacity for crossfades (so
+   two different-looking layers can blend without the browser having to
+   interpolate between incompatible gradients), and every generated
+   shape uses a small seeded LCG so it's stable across re-renders instead
+   of reshuffling every time React re-renders this component. */
+
+import EffectBackground from "./EffectBackground";
+
 const BACKDROPS = {
   start: {
     wash: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(94,156,137,0.02), rgba(7,7,10,0) 65%)",
-    bars: false,
-  },
-  work: {
-    wash: "radial-gradient(ellipse 80% 60% at 78% 12%, rgba(96,108,150,0.045), rgba(7,7,10,0) 68%)",
-    bars: true,
-  },
-  lab: {
-    wash: "radial-gradient(ellipse 80% 60% at 78% 12%, rgba(96,108,150,0.045), rgba(7,7,10,0) 68%)",
-    bars: true,
-  },
-  about: {
-    wash: "radial-gradient(ellipse 80% 60% at 78% 12%, rgba(96,108,150,0.045), rgba(7,7,10,0) 68%)",
-    bars: true,
   },
   contact: {
-    wash: "radial-gradient(ellipse 60% 55% at 50% 45%, rgba(108,88,132,0.05), rgba(7,7,10,0) 65%)",
-    bars: false,
+    wash: "radial-gradient(ellipse 60% 55% at 50% 45%, rgba(90,40,140,0.045), rgba(7,7,10,0) 68%)",
   },
 };
 
-const SECTION_ORDER = ["start", "work", "lab", "about", "contact"];
-
-/* Ambient light bars — replaces the old dot-grid texture for
-   Work/Lab/About. Soft, wide, sparse vertical streaks in the same
-   blue-violet / purple hues already used for those sections' wash and
-   the contact glow — so it reads as the same light system bleeding
-   through, not a new decorative pattern. Positions/timings are seeded
-   so the bars are stable across re-renders, same approach as the
-   triangle/diamond mesh below.
-
-   Motion is two combined animations rather than a static glow:
-   - barFlow: a repeating vertical gradient scrolling through the bar
-     (background-position), so light appears to travel and ripple
-     inside the beam like a flowing wave rather than just fading in/out.
-   - barSway: a slow, small horizontal drift, so the whole bar leans
-     side to side like it's being pushed by a current.
-   Each bar gets its own randomized durations/delays so they never
-   sync up and read as one mechanical loop. */
-function LightBars() {
-  const bars = [];
-  let seed = 19;
-  const rand = () => {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
+/* Shared seeded LCG — identical formula the original mesh functions each
+   defined inline; pulled out once since this file now has more than two
+   shapes that need one. */
+function makeRand(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
   };
-  const BAR_COUNT = 4; // sparser than before
-  for (let i = 0; i < BAR_COUNT; i++) {
-    const left = 12 + (i / (BAR_COUNT - 1)) * 76 + (rand() - 0.5) * 8;
-    const spread = 120 + rand() * 90; // wider blurred beam, px
-    const flowDuration = 12 + rand() * 8;
-    const flowDelay = -rand() * flowDuration;
-    const swayDuration = 18 + rand() * 10;
-    const swayDelay = -rand() * swayDuration;
-    // Same two families as before (blue-violet / purple) but pulled
-    // down in saturation and brightness — a muted slate and a muted
-    // aubergine, so the bars read as depth rather than as neon.
-    const hue = i % 2 === 0 ? "96,108,150" : "108,88,132";
-    bars.push(
-      <div
-        key={i}
-        className="absolute top-0 bottom-0"
-        style={{
-          left: `${left}%`,
-          width: `${spread}px`,
-          marginLeft: `-${spread / 2}px`,
-        }}
-      >
-        <div
-          className="light-bar-flow absolute inset-0"
-          style={{
-            background: `repeating-linear-gradient(180deg, transparent 0px, rgba(${hue},0.065) 70px, transparent 140px)`,
-            filter: "blur(28px)",
-            animationDuration: `${flowDuration}s, ${swayDuration}s`,
-            animationDelay: `${flowDelay}s, ${swayDelay}s`,
-          }}
-        />
-      </div>
-    );
-  }
-  return (
-    <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-      {bars}
-    </div>
-  );
 }
 
-export function SectionTint({ active }) {
-  return (
-    <div className="fixed inset-0 z-[1] pointer-events-none" aria-hidden="true">
-      {SECTION_ORDER.map((id) => {
-        const b = BACKDROPS[id];
-        const isActive = active === id;
-        return (
-          <div key={id}>
-            <div
-              className="absolute inset-0 transition-opacity duration-[1400ms] ease-out"
-              style={{ background: b.wash, opacity: isActive ? 1 : 0 }}
-            />
-            {b.bars && (
-              <div
-                className="absolute inset-0 transition-opacity duration-[1400ms] ease-out"
-                style={{ opacity: isActive ? 1 : 0 }}
-              >
-                <LightBars />
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+/* ================================================================
+   Layer 0 (MeshBackground, default export) — structural shapes.
+   start -> TriangleMesh (unchanged). everything else -> EffectBackground.
+   ================================================================ */
 
 /* Deterministic pseudo-random low-poly triangle mesh — landing page only.
-   Uses a seeded LCG so the mesh is stable across re-renders. */
+   Byte-for-byte the same generation logic as before (same seed, same
+   scale, same fills), just reusing the shared makeRand helper. */
 function TriangleMesh() {
+  const rand = makeRand(7);
   const tris = [];
-  let seed = 7;
-  const rand = () => {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
   for (let i = 0; i < 46; i++) {
     const x1 = rand() * 100;
     const y1 = rand() * 100;
@@ -159,81 +76,11 @@ function TriangleMesh() {
   );
 }
 
-/* Deterministic pseudo-random diamond mesh — used for every section after
-   the landing page. Deliberately mirrors the triangle mesh's restraint:
-   same seeded-LCG approach, same sparse count, same large scale, same flat
-   fills with no strokes, same low opacity range. Only the polygon shape
-   (rugged diamond instead of triangle) and the addition of two soft ambient
-   glows (teal + deep purple, blended at the same low opacity as everything
-   else here) change — so the page reads as "same system, next room," not
-   a different visual language. */
-function DiamondMesh() {
-  const shapes = [];
-  let seed = 41;
-  const rand = () => {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
-
-  // Two soft ambient glows, matched to the wash colors used elsewhere on
-  // the page (teal top area, deep purple lower area) — subtle enough to
-  // read as atmosphere, not as decoration sitting on top of the mesh.
-  shapes.push(
-    <circle key="glow-teal" cx={78} cy={12} r={42} fill="url(#glow-teal)" />,
-    <circle key="glow-purple" cx={18} cy={82} r={40} fill="url(#glow-purple)" />
-  );
-
-  // Rugged diamonds: large, sparse, irregular quadrilaterals, same scale
-  // and count as the triangle mesh's polygons so density matches.
-  for (let i = 0; i < 46; i++) {
-    const cx = rand() * 100;
-    const cy = rand() * 100;
-    const rx = 6 + rand() * 10;
-    const ry = 6 + rand() * 10;
-    const jitter = () => (rand() - 0.5) * 5;
-    const pts = [
-      [cx + jitter(), cy - ry + jitter()], // top
-      [cx + rx + jitter(), cy + jitter()], // right
-      [cx + jitter(), cy + ry + jitter()], // bottom
-      [cx - rx + jitter(), cy + jitter()], // left
-    ]
-      .map((p) => p.join(","))
-      .join(" ");
-    const light = rand() > 0.5;
-    shapes.push(
-      <polygon
-        key={`d-${i}`}
-        points={pts}
-        fill={light ? "rgba(94,156,137,0.025)" : "rgba(0,0,0,0.26)"}
-      />
-    );
-  }
-
-  return (
-    <svg
-      className="mesh-bg"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      <defs>
-        <radialGradient id="glow-teal">
-          <stop offset="0%" stopColor="rgba(94,156,137,0.045)" />
-          <stop offset="100%" stopColor="rgba(127,217,196,0)" />
-        </radialGradient>
-        <radialGradient id="glow-purple">
-          <stop offset="0%" stopColor="rgba(80,45,95,0.11)" />
-          <stop offset="100%" stopColor="rgba(90,40,140,0)" />
-        </radialGradient>
-      </defs>
-      {shapes}
-    </svg>
-  );
-}
-
-/* Crossfades between the two meshes the same way SectionTint crossfades
-   backdrops: both layers always mounted, only opacity animates. Triangle
-   mesh shows on "start", diamond mesh shows everywhere else. */
+/* Crossfades between the landing triangle mesh and the per-section WebGL
+   effect layer. Same mechanism the original file used for
+   Triangle <-> SignalField: TriangleMesh stays always-mounted with only
+   opacity animating; EffectBackground manages its own mount/unmount
+   lifecycle internally since its layers are WebGL, not free SVG/CSS. */
 export default function MeshBackground({ active }) {
   const showTriangles = active === "start";
   return (
@@ -244,12 +91,66 @@ export default function MeshBackground({ active }) {
       >
         <TriangleMesh />
       </div>
+      <EffectBackground active={active} />
+    </div>
+  );
+}
+
+/* ================================================================
+   Layer 1 (SectionTint, named export) — color / light.
+   start keeps its original wash. work/lab/about share one slow aurora
+   glow. contact keeps a residual wash; its signature orb has been
+   removed — the laser layer in EffectBackground.jsx carries the
+   section on its own now.
+   ================================================================ */
+
+/* Two glows, each built from a soft halo + a brighter, tighter core —
+   replaces the old repeating-gradient light bars. Same two hues the bars
+   used (slate blue-violet + aubergine), now expressed as drifting light.
+   Only `transform` and `opacity` ever animate, so all four blobs stay
+   compositor-only regardless of blur radius. */
+function AuroraGlow() {
+  return (
+    <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div className="aurora-blob aurora-blob--halo aurora-blob--a-halo" />
+      <div className="aurora-blob aurora-blob--core aurora-blob--a-core" />
+      <div className="aurora-blob aurora-blob--halo aurora-blob--b-halo" />
+      <div className="aurora-blob aurora-blob--core aurora-blob--b-core" />
+    </div>
+  );
+}
+
+/* UPDATE — the signature orb that used to sit here has been removed
+   entirely. Contact's identity now comes purely from the laser layer
+   in EffectBackground.jsx (fog widened, core beam glow pulled back —
+   see that file for the reasoning), plus the residual wash below. */
+
+export function SectionTint({ active }) {
+  const showAurora = active === "work" || active === "lab" || active === "about";
+  const showContactWash = active === "contact";
+  const showStartWash = active === "start";
+
+  return (
+    <div className="fixed inset-0 z-[1] pointer-events-none" aria-hidden="true">
       <div
         className="absolute inset-0 transition-opacity duration-[1400ms] ease-out"
-        style={{ opacity: showTriangles ? 0 : 1 }}
+        style={{ background: BACKDROPS.start.wash, opacity: showStartWash ? 1 : 0 }}
+      />
+      <div
+        className="absolute inset-0 transition-opacity duration-[1400ms] ease-out"
+        style={{ background: BACKDROPS.contact.wash, opacity: showContactWash ? 1 : 0 }}
+      />
+      <div
+        className="absolute inset-0 transition-opacity duration-[1400ms] ease-out"
+        style={{ opacity: showAurora ? 1 : 0 }}
       >
-        <DiamondMesh />
+        <AuroraGlow />
       </div>
+      {/* Always-on vignette — pulls the frame edges toward black so the
+          glow/stars read as light in a dark room rather than a gray
+          wash filling the screen. Not crossfaded; applies the same on
+          every section, including start. */}
+      <div className="absolute inset-0 vignette" />
     </div>
   );
 }

@@ -31,7 +31,7 @@ export const WORK_PROJECTS = [
     index: "01",
     name: "EFMS",
     full: "Enterprise Finance Management System",
-    previewUrl: "public/previews/flowvault-showcase.html",
+    previewUrl: "/previews/flowvault-showcase.html",
 
 
     tags: [
@@ -60,9 +60,9 @@ export const WORK_PROJECTS = [
     ],
 
     gradient: "linear-gradient(135deg,#11191C,#1c2b28)",
-    image: "/images/efms.png",
+    image: "/images/efms.webp",
     rotate: -4,
-    video: true,
+    video: false,
     link: "#",
   },
   {
@@ -71,7 +71,7 @@ export const WORK_PROJECTS = [
     index: "02",
     name: "DineOS",
     full: "Restaurant Point of Sale System",
-    previewUrl: "public/previews/dineos-showcase.html",
+    previewUrl: "/previews/dineos-showcase.html",
 
 
     tags: [
@@ -99,9 +99,9 @@ export const WORK_PROJECTS = [
     ],
 
     gradient: "linear-gradient(135deg,#101a17,#17332b)",
-    image: "/images/dineos.png",
+    image: "/images/dineos.webp",
     rotate: 3,
-    video: true,
+    video: false,
     link: "#",
   },
   {
@@ -110,7 +110,7 @@ export const WORK_PROJECTS = [
     index: "03",
     name: "Medicare",
     full: "Hospital Appointment & Patient Management",
-    previewUrl: "public/previews/medicare-landing.html",
+    previewUrl: "/previews/medicare-landing.html",
 
     tags: [
       "#React",
@@ -137,9 +137,9 @@ export const WORK_PROJECTS = [
     ],
 
     gradient: "linear-gradient(135deg,#0e1a19,#173028)",
-    image: "/images/medicare.png",
+    image: "/images/medicare.webp",
     rotate: -3,
-    video: true,
+    video: false,
     link: "#",
   },
   {
@@ -148,7 +148,7 @@ export const WORK_PROJECTS = [
     index: "01",
     name: "AI Chatbot",
     full: "Real-Time Voice AI Assistant",
-    previewUrl: "public/previews/ai-chatbot-landing.html",
+    previewUrl: "/previews/ai-chatbot-landing.html",
 
     tags: [
       "#Python",
@@ -180,9 +180,9 @@ export const WORK_PROJECTS = [
     ],
 
     gradient: "linear-gradient(135deg,#0f1a1c,#123028)",
-    image: "/images/ai-chatbot.png",
+    image: "/images/ai-chatbot.webp",
     rotate: -2,
-    video: true,
+    video: false,
     link: "#",
   },
   {
@@ -191,7 +191,7 @@ export const WORK_PROJECTS = [
     index: "02",
     name: "Annotation System",
     full: "AI-Powered Data Annotation Platform",
-    previewUrl: "public/previews/ai-annotate-landing.html",
+    previewUrl: "/previews/ai-annotate-landing.html",
 
     tags: [
       "#React",
@@ -222,9 +222,9 @@ export const WORK_PROJECTS = [
     ],
 
     gradient: "linear-gradient(135deg,#12191b,#1b2c2a)",
-    image: "/images/annotation-system.png",
+    image: "/images/annotation-system.webp",
     rotate: -3,
-    video: true,
+    video: false,
     link: "#",
   },
   {
@@ -233,7 +233,7 @@ export const WORK_PROJECTS = [
     index: "03",
     name: "Research AI",
     full: "Multi-Agent AI Research Platform",
-    previewUrl: "public/previews/ai-research-showcase.html",
+    previewUrl: "/previews/ai-research-showcase.html",
 
     tags: [
       "#Next.js",
@@ -266,9 +266,9 @@ export const WORK_PROJECTS = [
     ],
 
     gradient: "linear-gradient(135deg,#12191b,#1b2c2a)",
-    image: "/images/research-ai.png",
+    image: "/images/research-ai.webp",
     rotate: -3,
-    video: true,
+    video: false,
     link: "#",
   },
 ];

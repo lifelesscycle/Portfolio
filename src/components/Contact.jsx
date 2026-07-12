@@ -50,7 +50,10 @@ export default function Contact({ sectionRef }) {
       </a>
 
       <div className="text-muted text-xs mt-16">
-        © Made with {"</>"} by {SITE.name}.
+        © Made with {"</react>"} by {SITE.name}.
+        <div className="text-muted text-xxs mt-15">
+          Inspired by {"</Yasio>"}
+        </div>
       </div>
     </section>
   );

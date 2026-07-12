@@ -1,11 +1,8 @@
 import { ArrowLeft, ArrowRight, ExternalLink, Play } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 
-const DetailPanel = forwardRef(function DetailPanel(
-  { project, onClose, onPrev, onNext },
-  ref
-) {
+export default function DetailPanel({ project, controls, onClose, onPrev, onNext }) {
   // Tracks whether the scrollable content has been scrolled away from the
   // top, so the close button can fade to a lighter/transparent state once
   // it's no longer sitting right at the edge of freshly-opened content.
@@ -19,24 +16,32 @@ const DetailPanel = forwardRef(function DetailPanel(
 
   return (
     <motion.div
-      ref={ref}
       className="fixed inset-0 z-[200] flex flex-col md:flex-row"
       role="dialog"
       aria-modal="true"
       aria-label={`${project.name} project details`}
       // Mounts invisible while covered by ProjectTransition's blackout.
-      // The fade-in itself is NOT declared here — it's triggered
-      // imperatively from App.jsx, in the same synchronous block of
-      // code that fades the blackout overlay out. Two separate
-      // components each animating off their own `animate` prop would
-      // mean coordinating them through a React state update (a prop
-      // change has to round-trip through a re-render before the second
-      // animation even starts), which is exactly what let the main
-      // page peek through for a frame or two between the blackout and
-      // the panel. Driving both from one ref-based call removes that
-      // gap entirely — there's no render round-trip for either side to
-      // lag behind.
+      // The fade-in itself is NOT declared here as a static `animate`
+      // target — it's triggered imperatively from App.jsx, in the same
+      // synchronous block of code that fades the blackout overlay out,
+      // via the `controls` prop (useAnimationControls()). That's what
+      // lets both halves of the transition start in lockstep instead of
+      // one waiting on a state update -> re-render round trip to reach
+      // the other.
+      //
+      // Passing `controls` into `animate` (rather than reaching for this
+      // node's DOM element directly and calling the raw animate()) is
+      // required, not just tidier: this component re-renders itself on
+      // scroll (see handleScroll below), and a motion.div re-applies its
+      // own animated styles on every one of its own re-renders. A raw
+      // DOM-node animate() call never updates Framer's internal state,
+      // so the very next scroll-triggered re-render would silently stomp
+      // the imperative fade back to its old value. Routing the same
+      // imperative trigger through `controls` keeps Framer's internal
+      // state and the App.jsx-driven animation in sync, so a re-render
+      // can never undo it.
       initial={{ opacity: 0, scale: 0.985 }}
+      animate={controls}
       exit={{ opacity: 0, scale: 0.985, transition: { duration: 0.4, ease: [0.32, 0, 0.67, 0] } }}
     >
       {/* Live preview side — embeds the project's own HTML page via
@@ -245,6 +250,4 @@ const DetailPanel = forwardRef(function DetailPanel(
       </div>
     </motion.div>
   );
-});
-
-export default DetailPanel;
+}

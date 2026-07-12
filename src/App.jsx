@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, animate } from "framer-motion";
+import { AnimatePresence, animate, useAnimationControls } from "framer-motion";
 import MeshBackground, { SectionTint } from "./components/MeshBackground";
 import CustomCursor from "./components/CustomCursor";
 import LoadingScreen from "./components/LoadingScreen";
@@ -12,8 +12,12 @@ import Contact from "./components/Contact";
 import DetailPanel from "./components/DetailPanel";
 import ProjectTransition from "./components/ProjectTransition";
 import { NAV_ITEMS, WORK_PROJECTS } from "./data/content";
+import useDisableInspect from "./hooks/useDisableInspect"; 
+
 
 export default function App() {
+  useDisableInspect();
+
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState("start");
   const [detailProject, setDetailProject] = useState(null);
@@ -29,19 +33,33 @@ export default function App() {
   // DetailPanel, its z-[300] is finally compared against DetailPanel's
   // z-[200] directly, so it can actually cover it.
   const [projectTransitioning, setProjectTransitioning] = useState(false);
-  // Refs to the overlay's and panel's actual DOM nodes. The open
-  // sequence below (fade overlay in -> hold -> fade overlay out WHILE
-  // fading the panel in) animates both directly through these refs, in
-  // one continuous async function, rather than each component owning
-  // its own animation off a `revealing`-style prop. Two components each
+  // The open sequence below (fade overlay in -> hold -> fade overlay out
+  // WHILE fading the panel in) drives both halves from the same
+  // synchronous async function, rather than each component owning its
+  // own animation off a `revealing`-style prop — two components each
   // reacting to their own prop meant the second animation only started
   // after a full React state update -> re-render round trip past the
-  // first — enough of a gap for the page underneath to flash through
-  // for a frame or two. Animating both refs from the same call site
-  // removes that gap: both animations are handed to Framer Motion's
-  // engine in the same synchronous block of code.
+  // first, enough of a gap for the page underneath to flash through for
+  // a frame or two.
+  //
+  // The overlay (ProjectTransition) is a plain, non-animating div, so it's
+  // safe to drive with the raw imperative animate(domNode, ...) via a ref
+  // — nothing else ever writes to its style.opacity.
+  //
+  // The panel (DetailPanel) is a motion.div, which is NOT safe to drive
+  // that way: motion.div owns its node's animated styles internally and
+  // re-applies them on every one of that component's own re-renders
+  // (DetailPanel re-renders itself on scroll). A raw animate(domNode, ...)
+  // call never tells Framer's internal engine the target changed, so the
+  // next re-render silently stomps the imperative animation back to
+  // whatever Framer still thinks is current — that fight between the two
+  // engines was what made the tile-to-panel transition read as one
+  // jarring jump instead of two lockstepped beats. useAnimationControls()
+  // fixes this: it's the same imperative trigger, but wired into
+  // Framer's own `animate` prop, so its internal state and this
+  // imperative call can never disagree.
   const overlayRef = useRef(null);
-  const panelRef = useRef(null);
+  const panelControls = useAnimationControls();
   const sectionRefs = useRef({});
 
   useEffect(() => {
@@ -71,17 +89,48 @@ export default function App() {
   // scroll events reliably enough for event-driven detection to feel
   // consistent, so this just reads window.scrollY every frame instead.
   useEffect(() => {
+    // Frame-to-frame delta is too noisy to drive visibility directly —
+    // momentum/trackpad scrolling decelerates unevenly, so delta can flip
+    // sign from one frame to the next even while the user is net-scrolling
+    // one way. Reacting to that noise meant setNavVisible fired almost
+    // every frame, yanking the CSS transition back and forth before it
+    // could ever finish — which is what read as the nav being stuck
+    // "half shown, half hidden".
+    //
+    // Instead, accumulate movement since the last committed direction and
+    // only flip once that accumulation clears a real threshold. Any tick
+    // that moves against the current accumulation resets it rather than
+    // subtracting, so a brief jitter can't slowly cancel out real intent
+    // either.
     let lastY = window.scrollY;
+    let anchorY = window.scrollY; // scrollY at the last direction commit
+    let dir = 0; // -1 up, 1 down, 0 unset
     let frame;
+    const THRESHOLD = 24; // px of net movement required to flip
 
     const tick = () => {
       const y = window.scrollY;
-      const delta = y - lastY;
+      const frameDelta = y - lastY;
+
       if (y < 80) {
         setNavVisible(true);
-      } else if (Math.abs(delta) > 1) {
-        setNavVisible(delta < 0);
+        anchorY = y;
+        dir = 0;
+      } else if (frameDelta !== 0) {
+        const movingDir = frameDelta < 0 ? -1 : 1;
+
+        if (movingDir !== dir) {
+          // direction reversed (or first movement) — restart accumulation
+          dir = movingDir;
+          anchorY = lastY;
+        }
+
+        if (Math.abs(y - anchorY) > THRESHOLD) {
+          setNavVisible(dir < 0);
+          anchorY = y;
+        }
       }
+
       lastY = y;
       frame = requestAnimationFrame(tick);
     };
@@ -115,7 +164,8 @@ export default function App() {
   // flips true. By this point React has already committed the render
   // that mounted both the overlay (ProjectTransition) and the panel
   // (DetailPanel, inside AnimatePresence) — effects run after commit —
-  // so both refs are attached before this fires.
+  // so overlayRef.current is attached and panelControls is already bound
+  // to DetailPanel's motion.div before this fires.
   const FADE_IN_S = 0.7; // page receding into blackness — slow, on purpose
   const HOLD_S = 0.2;
   const FADE_OUT_S = 0.6; // blackness receding to reveal the panel
@@ -136,9 +186,14 @@ export default function App() {
       // — not one triggered by the other completing, and not one
       // waiting on a state update to reach the other component. That's
       // what guarantees they run in lockstep instead of drifting apart.
-      const panelReveal = panelRef.current
-        ? animate(panelRef.current, { opacity: 1, scale: 1 }, { duration: FADE_OUT_S, ease: EASE })
-        : Promise.resolve();
+      // panelControls.start() goes through Framer's own engine (unlike a
+      // raw animate() on the DOM node), so DetailPanel's later re-renders
+      // (e.g. on scroll) can't stomp it mid-flight.
+      const panelReveal = panelControls.start({
+        opacity: 1,
+        scale: 1,
+        transition: { duration: FADE_OUT_S, ease: EASE },
+      });
       const overlayFadeOut = animate(overlayRef.current, { opacity: 0 }, { duration: FADE_OUT_S, ease: EASE });
 
       await Promise.all([panelReveal, overlayFadeOut]);
@@ -208,7 +263,7 @@ export default function App() {
           {detailProject && (
             <DetailPanel
               key="detail-panel"
-              ref={panelRef}
+              controls={panelControls}
               project={detailProject}
               onClose={closeProject}
               onPrev={() => step(-1)}
